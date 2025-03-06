@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Django PWA</title>
+    {% load static %}
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <script>
         if ('serviceWorker' in navigator) {
@@ -14,5 +15,10 @@
 </head>
 <body>
     <h1>Django PWA</h1>
+    <h2>Welcome, {{ user.username }}!</h2>
+    <form id="logout-form" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
