@@ -1,15 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFit | Login</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap">
 </head>
 <body>
-    <h2>Login</h2>
+    <!-- <h2>Login</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Login</button>
     </form>
-    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p> -->
+
+    <div class="container">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="TrackFit Logo">
+            <h1>TrackFit</h1>
+        </div>
+        <p>Your personal fitness journey starts here</p>
+        <div class="login-form">
+            <h2>Welcome Back!</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Email or Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    {{ form.password }}
+                </div>
+                <div class="remember-me">
+                    <div class="check-remember-me">
+                        <input type="checkbox" id="remember-me" name="remember-me">
+                        <label for="remember-me">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn">Sign In</button>
+            </form>
+            <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+        </div>
+    </div>
 </body>
 </html>
