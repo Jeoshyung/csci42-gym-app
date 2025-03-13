@@ -4,10 +4,17 @@
 {% block title %}TrackFit - Register{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <div class="card">
-            <div class="card-body">
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="col-md-4">
+        <div class="text-center mb-4">
+            <div class="d-flex align-items-center justify-content-center gap-3">
+                <h1 class="fw-bold fs-4 mb-0">TrackFit</h1>
+            </div>
+            <p class="text-muted">Start your fitness journey</p>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
                 <h2 class="card-title text-center mb-4">Register</h2>
                 <form method="post">
                     {% csrf_token %}
@@ -16,16 +23,16 @@
                         <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                         {{ field|addclass:'form-control' }}
                         {% if field.errors %}
-                        <div class="alert alert-danger mt-1">
+                        <div class="alert alert-danger mt-1 small">
                             {{ field.errors }}
                         </div>
                         {% endif %}
                     </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                    <button type="submit" class="btn btn-primary w-100" style="background-color: #4a00e0; border-color: #4a00e0;">Register</button>
                 </form>
-                <p class="text-center mt-3">
-                    Already have an account? <a href="{% url 'login' %}">Login here</a>
+                <p class="text-center mt-3 mb-0">
+                    Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Login here</a>
                 </p>
             </div>
         </div>
