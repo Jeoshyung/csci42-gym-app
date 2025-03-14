@@ -151,3 +151,8 @@ PWA_APP_DIR = 'ltr'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# LOGIN Settings
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'login'
