@@ -1,18 +1,18 @@
-{% extends 'base.html' %}
-{% load form_tags %}
-
-{% block title %}TrackFit - Home{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h1 class="text-center mb-4">Welcome to TrackFit</h1>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Your Fitness Journey</h5>
-                <p class="card-text">Start tracking your fitness progress today!</p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django PWA</title>
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/js/serviceworker.js')
+                .then(() => console.log('Service Worker Registered'));
+        }
+    </script>
+</head>
+<body>
+    <h1>Django PWA</h1>
+</body>
+</html>
