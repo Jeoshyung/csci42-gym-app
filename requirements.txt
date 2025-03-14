@@ -3,3 +3,4 @@ Django==5.1.6
 django-pwa==2.0.1
 sqlparse==0.5.3
 tzdata==2025.1
+pandas=2.2.3
