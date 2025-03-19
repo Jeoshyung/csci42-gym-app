@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+{% load static %}
+{% block title %}TrackFit - Profile{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrackFit Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-stat-card {
+            min-width: 100px;
+        }
+
+
+        .bg-white {
+            background-color: white;
+        }
+
+        .rounded {
+            border-radius: 12 px;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .setting-item:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+        .icon-img {
+            width: 24px;
+            height: 24px;
+            filter: invert(50%) sepia(5%) saturate(10%) brightness(90%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card shadow-sm p-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold">Profile</h5>
+                <i class="fas fa-edit text-primary fs-5"></i>
+            </div>
+
+            <div class="text-center mt-3">
+                <img src="{% static 'images/placeholder_profile.jpg' %}" class="profile-img" alt="Profile Picture">
+                <h4 class="mt-2">{{ user.username }}</h4>
+                <span class="badge bg-primary">Basic User</span>
+            </div>
+            
+            <div class="row text-center mt-4">
+                <div class="col">
+                    <div class="card p-2 profile-stat-card">
+                        <p class="mb-1 text-muted">Weight</p>
+                        <h5>65kg</h5>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card p-2 profile-stat-card">
+                        <p class="mb-1 text-muted">BMI</p>
+                        <h5>22.5</h5>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card p-2 profile-stat-card">
+                        <p class="mb-1 text-muted">Level</p>
+                        <h5>Pro</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="fw-bold text-start">Fitness Goals</h5>
+                <div class="p-3 rounded shadow-sm bg-white"> 
+                    <p class="mb-1">Weekly Workouts <span class="float-end fw-semibold">5/7</span></p>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 71%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="fw-bold text-start">Settings</h5> <!-- Left-aligned header -->
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item setting-item">
+                        <img src="{% static 'images/button_icons/account.png' %}" class="icon-img" alt="Account Icon">
+                        Account Details
+                    </li>
+                    <li class="list-group-item setting-item">
+                        <img src="{% static 'images/button_icons/notification.png' %}" class="icon-img" alt="Notifications Icon">
+                        Notifications
+                    </li>
+                    <li class="list-group-item setting-item">
+                        <img src="{% static 'images/button_icons/privacy.png' %}" class="icon-img" alt="Privacy Icon">
+                        Privacy
+                    </li>
+                    <li class="list-group-item setting-item">
+                        <img src="{% static 'images/button_icons/settings.png' %}" class="icon-img" alt="Settings Icon">
+                        App Settings
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+{% endblock %}
