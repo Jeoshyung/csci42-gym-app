@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .forms import LoginForm, RegisterForm
 from datetime import datetime
 from .models import WorkoutSession, WorkoutLogging, Exercise
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -76,3 +78,17 @@ def workout_logger_view(request):
         'past_sessions': past_sessions,
         'exercises': exercises
     })
+
+ @login_required
+def workouts_view(request):
+    query = request.GET.get('q', '')
+    if query:
+        exercises_list = Exercise.objects.filter(name__icontains=query)
+    else:
+        exercises_list = Exercise.objects.all()
+
+    paginator = Paginator(exercises_list, 9)
+
+    page_number = request.GET.get('page')
+    exercises = paginator.get_page(page_number)
+    return render(request, 'workouts.html', {'exercises': exercises, 'query': query})
