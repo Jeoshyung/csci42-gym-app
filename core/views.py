@@ -5,8 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .forms import LoginForm, RegisterForm
 from datetime import datetime
-from .models import Exercise
-
+from .models import WorkoutSession, WorkoutLogging, Exercise
 
 
 def login_view(request):
@@ -50,6 +49,37 @@ def profile_view(request):
     return render(request, 'profile.html')
 
 @login_required
+def workout_logger_view(request):
+    past_sessions = WorkoutSession.objects.filter(user=request.user).order_by('-date')
+
+    if request.method == 'POST':
+        selected_exercise_id = request.POST.get('exercise')
+        sets = request.POST.get('sets')
+        reps = request.POST.get('reps')
+        notes = request.POST.get('notes', '')
+
+        if selected_exercise_id and sets and reps:
+            exercise = Exercise.objects.get(id=selected_exercise_id)
+            
+            session, created = WorkoutSession.objects.get_or_create(
+                user=request.user,
+                date__date=datetime.today().date(),
+                defaults={'notes': notes}
+            )
+            
+            WorkoutLogging.objects.create(
+                session=session, exercise=exercise, sets=sets, reps=reps
+            )
+            messages.success(request, "Workout logged successfully!")
+            return redirect('workout_logger') 
+
+    exercises = Exercise.objects.all()  
+    return render(request, 'workoutsession.html', {
+        'past_sessions': past_sessions,
+        'exercises': exercises
+    })
+
+ @login_required
 def workouts_view(request):
     query = request.GET.get('q', '')
     if query:

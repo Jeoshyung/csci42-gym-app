@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Workout Logger | TrackFit{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Workout Logger</h2>
+
+    <!-- Past Workouts -->
+    <div class="mt-4">
+        <h3>Past Workouts</h3>
+        {% if past_workouts %}
+            <div class="list-group">
+                {% for workout in past_workouts %}
+                    <div class="list-group-item">
+                        <strong>{{ workout.exercise }}</strong> - 
+                        {{ workout.sets }} sets, {{ workout.reps }} reps
+                        <br> <small class="text-muted">{{ workout.date }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No workouts logged yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Log New Workout -->
+    <div class="mt-4">
+        <h3>Log a Workout</h3>
+        <form method="POST" class="p-3 bg-light rounded">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="exercise" class="form-label">Exercise:</label>
+                <select name="exercise" id="exercise" class="form-select" required>
+                    {% for exercise in exercises %}
+                        <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="sets" class="form-label">Sets:</label>
+                <input type="number" name="sets" id="sets" class="form-control" min="1" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="reps" class="form-label">Reps:</label>
+                <input type="number" name="reps" id="reps" class="form-control" min="1" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Log Workout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
