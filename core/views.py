@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import LoginForm, RegisterForm
+from datetime import datetime
 
 def login_view(request):
     if request.method == 'POST':
@@ -36,7 +37,10 @@ def register_view(request):
 
 @login_required
 def index_view(request):
-    return render(request, 'index.html')
+    context = {
+        'today_date': datetime.today().strftime('%B %d, %Y')
+    }
+    return render(request, 'index.html', context)
 
 def profile_view(request):
     return render(request, 'profile.html')
