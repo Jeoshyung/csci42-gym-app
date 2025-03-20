@@ -9,7 +9,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('', index_view, name='index'),
     path("profile/", profile_view, name="profile"),
-    path('workouts/', workout_logger_view, name='workout_logger'),
+    path('workoutlogging/', workout_logger_view, name='workout_logger'),
     path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('workouts/', workouts_view, name='workouts'),
 ]

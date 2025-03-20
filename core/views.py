@@ -79,7 +79,7 @@ def workout_logger_view(request):
         'exercises': exercises
     })
 
- @login_required
+@login_required
 def workouts_view(request):
     query = request.GET.get('q', '')
     if query:
