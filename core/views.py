@@ -7,6 +7,25 @@ from .forms import LoginForm, RegisterForm
 from datetime import datetime
 from .models import WorkoutSession, WorkoutLogging, Exercise
 
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.models import User
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.urls import reverse
+
+class DemoPasswordResetView(PasswordResetView):
+    def form_valid(self, form):
+        email = form.cleaned_data.get("email")
+        user = User.objects.filter(email=email).first()
+        reset_link = None
+        
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_link = self.request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
+
+        return render(self.request, "password_reset_done.html", {"reset_link": reset_link})
 
 def login_view(request):
     if request.method == 'POST':
@@ -14,9 +33,16 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            remember_me = request.POST.get('remember_me') == 'on'
+
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                if remember_me:
+                    request.session.set_expiry(86400)  #1209600
+                else:
+                    request.session.set_expiry(0) 
+
                 messages.success(request, f'Welcome back, {username}!')
                 return redirect('index')
             else:
@@ -24,6 +50,7 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
+
 
 def register_view(request):
     if request.method == 'POST':
