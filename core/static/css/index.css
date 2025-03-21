@@ -6,6 +6,10 @@
     overflow: hidden;
 }
 
+.carousel-indicators {
+    position: static;
+}
+
 /* Carousel Indicators */
 .carousel-indicators [data-bs-target] {
     background-color: #bababa;
