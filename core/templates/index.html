@@ -1,18 +1,178 @@
 {% extends 'base.html' %}
 {% load form_tags %}
-
+{% load static %}
 {% block title %}TrackFit - Home{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h1 class="text-center mb-4">Welcome to TrackFit</h1>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Your Fitness Journey</h5>
-                <p class="card-text">Start tracking your fitness progress today!</p>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div id="dashboardCarousel" class="carousel slide mb-4">
+            <!-- Indicators -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="1"></button>
+            </div>
+        
+            <!-- Carousel Items -->
+            <div class="carousel-inner">
+                <!-- First Slide: Weekly Progress -->
+                <div class="carousel-item active">
+                    <h5 class="fw-bold">Your Weekly Snapshot</h5>
+                    <div class="d-flex justify-content-around mt-3">
+                        <div>
+                            <p class="mb-0">Workouts</p>
+                            <h5 class="fw-bold">{{ total_workouts }}</h5>
+                        </div>
+                        <div>
+                            <p class="mb-0">Sets</p>
+                            <h5 class="fw-bold">{{ total_sets }}</h5>
+                        </div>
+                        <div>
+                            <p class="mb-0">Reps</p>
+                            <h5 class="fw-bold">{{ total_reps }}</h5>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Second Slide: Fitness Goals -->
+                <div class="carousel-item">
+                    <h5 class="fw-bold">Your Goals</h5>
+                    <div class="d-flex justify-content-around mt-3">
+                        {% for goal in goals %}
+                        <div class="goal-item text-center">
+                            <canvas id="goalProgress{{ forloop.counter }}" class="progress-canvas"></canvas>
+                            <p class="mb-0">{{ goal.name }} ({{goal.period}})</p>
+                            <h5 class="fw-bold">{{ goal.current_value }}/{{ goal.target_value }} {{goal.unit}}</h5>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'add_goal' %}" class="btn btn-primary mt-3">Add a Goal</a>
+                </div>
             </div>
         </div>
+
+        <div class="dashboard-card mt-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold">Today's Progress</h5>
+                <span class="text-muted">{{ today_date }}</span>
+            </div>
+
+            <div class="d-flex justify-content-around mt-3">
+                <div class="progress-item">
+                    <div class="icon-circle icon-blue">
+                        <img src="{% static 'images/button_icons/calories.png' %}" class="icon-overlay" alt="Calories">
+                    </div>
+                    <p class="mb-0">Calories</p>
+                    <h5 class="fw-bold">1,248</h5>
+                </div>
+                <div class="progress-item">
+                    <div class="icon-circle icon-green">  
+                        <img src="{% static 'images/button_icons/exercise.png' %}" class="icon-overlay" alt="Exercise">
+                    </div>
+                    <p class="mb-0">Exercise</p>
+                    <h5 class="fw-bold">45 min</h5>
+                </div>
+                <div class="progress-item">
+                    <div class="icon-circle icon-purple"> 
+                        <img src="{% static 'images/button_icons/steps.png' %}" class="icon-overlay" alt="Steps">
+                    </div>
+                    <p class="mb-0">Steps</p>
+                    <h5 class="fw-bold">8,432</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-card mt-3">
+            <h5 class="fw-bold">Weekly Activity</h5>
+            <div class="chart-container">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-3">
+            <a href="workoutlogging" class="btn-trackfit btn-workout">+ Log Workout</a>
+            <a href="#" class="btn-trackfit btn-meal">
+                <img src="{% static 'images/button_icons/fork_and_knife.png' %}" class="btn-icon" alt="Fork and Knife"> Track Meal
+            </a>
+        </div>
+
+        <div class="dashboard-card mt-3">
+            <h5 class="fw-bold">Today's Schedule</h5>
+            <div class="schedule-item">
+                <span class="dot dot-blue"></span>
+                <div class="schedule-text">
+                    <p class="mb-0 fw-bold workout-name">Morning Yoga</p>
+                    <small class="text-muted">7:00 AM - 7:15 AM</small>
+                </div>
+            </div>
+            <div class="schedule-item">
+                <span class="dot dot-green"></span>
+                <div class="schedule-text">
+                    <p class="mb-0 fw-bold workout-name">Strength Training</p>
+                    <small class="text-muted">7:00 AM - 7:15 AM</small>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const goals = JSON.parse('{{ serialized_goals|safe }}'); // Pass the goals data from the backend
+            goals.forEach((goal, index) => {
+                const ctx = document.getElementById(`goalProgress${index + 1}`).getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [goal.current_value, goal.target_value - goal.current_value],
+                            backgroundColor: ['#4caf50', '#e0e0e0'], // Green for progress, gray for remaining
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        cutout: '70%', // Makes it look like a circular progress bar
+                        plugins: {
+                            tooltip: { enabled: false }, // Disable tooltips
+                            legend: { display: false } // Hide legend
+                        }
+                    }
+                });
+            });
+        });
+
+        // Goal Progress Chart
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                datasets: [{
+                    label: 'Activity',
+                    data: [20, 30, 25, 70, 40, 50, 55],
+                    backgroundColor: ['#D1D5FE', '#D1D5FE', '#D1D5FE', '#4A00E0', '#D1D5FE', '#D1D5FE', '#D1D5FE'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,  
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+</body>
 {% endblock %}
