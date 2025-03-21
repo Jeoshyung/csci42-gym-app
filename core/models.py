@@ -70,3 +70,14 @@ class WorkoutLogging(models.Model):
 
     def __str__(self):
         return f"{self.exercise.name} - {self.sets}x{self.reps}"
+
+class FitnessGoal(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="fitness_goals")
+    name = models.CharField(max_length=255)  # e.g., "Workouts per week"
+    target_value = models.FloatField()  # e.g., "3" workouts
+    unit = models.CharField(max_length=50, blank=True, null=True)  # e.g., "workouts"
+    period = models.CharField(max_length=50, choices=[('daily', 'Daily'), ('weekly', 'Weekly')], default='weekly')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.target_value} {self.unit} ({self.period})"
