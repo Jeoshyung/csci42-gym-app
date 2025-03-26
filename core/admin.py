@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exercise, ExerciseCategory, MuscleGroup, Muscle, Equipment, Profile, WorkoutSession, WorkoutLogging
+from .models import Exercise, ExerciseCategory, MuscleGroup, Muscle, Equipment, Profile, WorkoutSession, WorkoutLogging, FitnessGoal
 
 
 # Register your models here.
@@ -12,3 +12,4 @@ admin.site.register(Equipment)
 admin.site.register(Profile)
 admin.site.register(WorkoutSession)
 admin.site.register(WorkoutLogging)
+admin.site.register(FitnessGoal)
