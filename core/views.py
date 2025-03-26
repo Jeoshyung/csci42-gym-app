@@ -25,7 +25,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 if remember_me:  
-                    request.session.set_expiry(5)  
+                    request.session.set_expiry(86400)  
                 else:
                     request.session.set_expiry(0) 
                     request.session.modified = True
