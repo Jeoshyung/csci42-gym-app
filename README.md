@@ -60,3 +60,39 @@ Open a web browser and go to:
 ```
 http://127.0.0.1:8000/
 ```
+
+## Testing on Mobile
+
+### 1. Run server
+```sh
+python manage.py runserver 0.0.0.0:8000
+```
+This allows connections from other devices on the same network.
+
+### 2. Find your Local IP Address
+On Windows, open Command Prompt and run:
+```sh
+ipconfig
+```
+On Mac/Linux, use:
+```sh
+ifconfig | grep inet
+```
+or
+```sh
+ip a | grep inet
+```
+Look for your IPv4 Address under your active network (e.g., `192.168.1.X`).
+
+### 3. Connect Your Mobile Device to the Same Network
+Make sure your mobile device is connected to the same Wi-Fi network as your development machine.
+
+### 4. Open the Project on Your Mobile Browser
+On your mobile device, open a browser (Chrome, Safari, Firefox) and enter:
+```cpp
+http://<your-ip>:8000/
+```
+Example:
+```cpp
+http://192.168.1.2:8000/
+```
