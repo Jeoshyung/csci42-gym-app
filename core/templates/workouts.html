@@ -34,12 +34,37 @@
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ exercise.name }}</h5>
                     <p class="card-text">{{ exercise.description }}</p>
-                    <p class="card-text"><small class="text-muted">Category: {{ exercise.category.name }}</small></p>
-                    <p class="card-text"><small class="text-muted">Muscle Group: {{ exercise.muscle_group.name }}</small></p>
-                    <p class="card-text"><small class="text-muted">Equipment: {{ exercise.equipment.name }}</small></p>
-                    {% if exercise.tutorial_link %}
-                    <a href="{{ exercise.tutorial_link }}" class="btn btn-primary mt-auto" target="_blank">Tutorial</a>
-                    {% endif %}
+                    <p class="card-text"><small class="text-muted">Category: {{ exercise.category }}</small></p>
+                    <p class="card-text">
+                        <small class="text-muted">Primary Muscles: 
+                            {% for muscle in exercise.primary_muscles.all %}
+                                {{ muscle.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                None
+                            {% endfor %}
+                        </small>
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">Secondary Muscles: 
+                            {% for muscle in exercise.secondary_muscles.all %}
+                                {{ muscle.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                None
+                            {% endfor %}
+                        </small>
+                    </p>
+                    <p class="card-text"><small class="text-muted">Equipment: {{ exercise.equipment }}</small></p>
+
+                    <div class="exercise-image-container mb-3">
+                        <img 
+                            src="{{ exercise.images.0 }}" 
+                            alt="{{ exercise.name }}" 
+                            class="img-fluid exercise-image" 
+                            data-image1="{{ exercise.images.0 }}" 
+                            data-image2="{{ exercise.images.1 }}"
+                            onclick="toggleImage(this)"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,4 +126,19 @@
         </ul>
     </nav>
 </div>
+
+<script>
+    function toggleImage(imgElement) {
+        const image1 = imgElement.getAttribute('data-image1');
+        const image2 = imgElement.getAttribute('data-image2');
+        const currentSrc = imgElement.getAttribute('src');
+
+        // Toggle between the two images
+        if (currentSrc === image1) {
+            imgElement.setAttribute('src', image2);
+        } else {
+            imgElement.setAttribute('src', image1);
+        }
+    }
+</script>
 {% endblock %}
