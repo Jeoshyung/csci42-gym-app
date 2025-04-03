@@ -104,7 +104,8 @@ def index_view(request):
 
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html')
+    exercises = Exercise.objects.all()
+    return render(request, 'profile.html', {'exercises': exercises})
 
 
 @login_required
