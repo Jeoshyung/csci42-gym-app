@@ -81,13 +81,13 @@
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Weight</p>
-                        <h5>65kg</h5>
+                        <h5>{{ user.profile.weight|default:"N/A" }} kg</h5>
                     </div>
                 </div>
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
-                        <p class="mb-1 text-muted">BMI</p>
-                        <h5>22.5</h5>
+                        <p class="mb-1 text-muted">Height</p>
+                        <h5>{{ user.profile.height|default:"N/A" }} cm</h5>
                     </div>
                 </div>
                 <div class="col">
