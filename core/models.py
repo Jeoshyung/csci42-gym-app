@@ -8,6 +8,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     name = models.CharField(max_length=63)
     email = models.EmailField(max_length=254)
+    weight = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    age = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} | {self.email}'
@@ -102,7 +105,7 @@ class Exercise(models.Model):
 
     name = models.CharField(max_length=255)
     force = models.CharField(max_length=10, choices=FORCE_CHOICES, blank=True, null=True)
-    level = models.CharField(max_length=15, choices=LEVEL_CHOICES)
+    level = models.CharField(max_length=15, choices=LEVEL_CHOICES, default="beginner")
     mechanic = models.CharField(max_length=15, choices=MECHANIC_CHOICES, blank=True, null=True)
     equipment = models.CharField(max_length=50, choices=EQUIPMENT_CHOICES, blank=True, null=True)
     primary_muscles = models.ManyToManyField(Muscle, related_name='primary_exercises')
@@ -110,7 +113,7 @@ class Exercise(models.Model):
     instructions = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     images = models.JSONField(default=list)  # Store image paths as a list
-    exercise_id = models.CharField(max_length=50, unique=True)
+    exercise_id = models.CharField(max_length=50, unique=True, default="temp_id")
 
     def __str__(self):
         return self.name
