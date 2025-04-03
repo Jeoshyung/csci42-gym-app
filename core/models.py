@@ -176,4 +176,4 @@ class PersonalRecord(models.Model):
     date_achieved = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.exercise.name}: {self.weight}kg x {self.reps}"
+        return f"{self.exercise.name}: {self.weight}{self.unit} x {self.reps}"

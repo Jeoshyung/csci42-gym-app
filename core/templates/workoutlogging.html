@@ -30,13 +30,17 @@
         <form method="POST" class="p-3 bg-light rounded">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="exercise" class="form-label">Exercise:</label>
+                <label for="exercise" class="form-label">Exercise</label>
                 <select name="exercise" id="exercise" class="form-select" required>
+                    <option value="" disabled selected>Select an exercise</option>
                     {% for exercise in exercises %}
                         <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                    {% empty %}
+                        <option disabled>No exercises available</option>
                     {% endfor %}
                 </select>
             </div>
+
 
             <div class="mb-3">
                 <label for="sets" class="form-label">Sets:</label>
