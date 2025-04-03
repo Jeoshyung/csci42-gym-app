@@ -19,9 +19,17 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            remember_me = request.POST.get('remember_me')  
+
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                if remember_me:  
+                    request.session.set_expiry(86400)  
+                else:
+                    request.session.set_expiry(0) 
+                    request.session.modified = True
+
                 messages.success(request, f'Welcome back, {username}!')
                 return redirect('index')
             else:
@@ -84,6 +92,7 @@ def index_view(request):
     }
     return render(request, 'index.html', context)
 
+@login_required
 def profile_view(request):
     return render(request, 'profile.html')
 
