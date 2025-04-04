@@ -132,3 +132,32 @@ python manage.py load_exercises
 ```sh
 python manage.py createsuperuser
 ```
+
+## Reset Database Instructions
+**WARNING: Only follow this if you wish to reset the database.**
+
+### 1. Create a Backup of the Database
+```sh
+copy db.sqlite3 db_backup.sqlite3
+```
+
+### 2. Delete `__pycache__` and `\migrations` on all directories
+Manually delete all `__pycache__` and `\migrations` on all directories
+
+### 3. Apply Migrations
+```sh
+python manage.py makemigrations core
+```
+```sh
+python manage.py migrate
+```
+
+### 4. Load Exercises to Database
+```sh
+python manage.py load_exercises
+```
+
+### 5. Create a superuser
+```sh
+python manage.py createsuperuser
+```
