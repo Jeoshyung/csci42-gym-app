@@ -13,14 +13,9 @@
 <body>
     <div class="container mt-4">
         <div id="dashboardCarousel" class="carousel slide mb-4">
-            <!-- Indicators -->
-            <div class="carousel-indicators">
-                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
-                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="1"></button>
-            </div>
         
             <!-- Carousel Items -->
-            <div class="carousel-inner">
+            <div class="carousel-inner mt-3">
                 <!-- First Slide: Weekly Progress -->
                 <div class="carousel-item active">
                     <h5 class="fw-bold">Your Weekly Snapshot</h5>
@@ -55,6 +50,11 @@
                     <a href="{% url 'add_goal' %}" class="btn btn-primary mt-3">Add a Goal</a>
                 </div>
             </div>
+            <!-- Indicators -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="1"></button>
+            </div>
         </div>
 
         <div class="dashboard-card mt-3">
@@ -70,21 +70,21 @@
                         <img src="{% static 'images/button_icons/calories.png' %}" class="icon-overlay" alt="Calories">
                     </div>
                     <p class="mb-0">Calories</p>
-                    <h5 class="fw-bold">1,248</h5>
+                    <h5 class="fw-bold">--</h5>
                 </div>
                 <div class="progress-item">
                     <div class="icon-circle icon-green">  
                         <img src="{% static 'images/button_icons/exercise.png' %}" class="icon-overlay" alt="Exercise">
                     </div>
                     <p class="mb-0">Exercise</p>
-                    <h5 class="fw-bold">45 min</h5>
+                    <h5 class="fw-bold">--</h5>
                 </div>
                 <div class="progress-item">
                     <div class="icon-circle icon-purple"> 
                         <img src="{% static 'images/button_icons/steps.png' %}" class="icon-overlay" alt="Steps">
                     </div>
                     <p class="mb-0">Steps</p>
-                    <h5 class="fw-bold">8,432</h5>
+                    <h5 class="fw-bold">--</h5>
                 </div>
             </div>
         </div>

@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = "Import exercise from csv"
 
     def handle(self, *args, **kwargs):
-        file_path = "core/ExerciseListFinal.csv"
+        file_path = "core/data/ExerciseListFinal.csv"
         df = pd.read_csv(file_path)
 
         for _, row in df.iterrows():

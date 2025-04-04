@@ -60,6 +60,53 @@
             height: 24px;
             filter: invert(50%) sepia(5%) saturate(10%) brightness(90%);
         }
+
+        .pr-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .pr-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 200px;
+            margin-bottom: 10px;
+        }
+
+        .pr-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+
+        .add-pr-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-pr-btn:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -81,13 +128,13 @@
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Weight</p>
-                        <h5>65kg</h5>
+                        <h5>{{ user.profile.weight|default:"N/A" }} kg</h5>
                     </div>
                 </div>
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
-                        <p class="mb-1 text-muted">BMI</p>
-                        <h5>22.5</h5>
+                        <p class="mb-1 text-muted">Height</p>
+                        <h5>{{ user.profile.height|default:"N/A" }} cm</h5>
                     </div>
                 </div>
                 <div class="col">
@@ -97,6 +144,35 @@
                     </div>
                 </div>
             </div>
+
+            <div class="mt-4">
+                <h5 class="fw-bold text-start">Personal Records</h5>
+                <div class="card p-4 shadow-sm rounded bg-light">
+                    <div class="pr-container d-flex flex-wrap justify-content-start gap-3">
+                        {% for record in user.personal_records.all %}
+                        <div class="pr-item d-flex align-items-center p-3 shadow-sm rounded border record-item" 
+                            data-exercise-id="{{ record.exercise.id }}" 
+                            data-exercise-name="{{ record.exercise.name }}"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#historyModal">
+                                <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;">
+                                <div>
+                                    <h6 class="mb-0">{{ record.exercise.name }}</h6>
+                                    <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
+                                    <p class="text-muted mb-0"><small>{{ record.date_achieved|date:"M d, Y" }}</small></p>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-center text-muted">No personal records yet.</p>
+                        {% endfor %}
+                        <div class="d-flex justify-content-end mt-4">
+                            <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                    style="width: 50px; height: 50px; font-size: 24px;" 
+                                    data-bs-toggle="modal" data-bs-target="#addPRModal"> + </button>
+                        </div>
+                    </div>
+                </div>
+            </div>            
             
             <div class="mt-4">
                 <h5 class="fw-bold text-start">Fitness Goals</h5>
@@ -107,6 +183,58 @@
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="addPRModal" tabindex="-1" aria-labelledby="addPRModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addPRModalLabel">Add Personal Record</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addPRForm" method="POST" action="{% url 'add_personal_record' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="exercise" class="form-label">Exercise</label>
+                                    <select name="exercise" id="exercise" class="form-select" required>
+                                        <option value="" disabled selected>Select an exercise</option>
+                                        {% for exercise in exercises %}
+                                            <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                                        {% empty %}
+                                            <option disabled>No exercises available</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                    
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Weight</label>
+                                    <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
+                                </div>
+                    
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label">Unit</label>
+                                    <input type="text" name="unit" id="unit" class="form-control" required>
+                                    <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
+                                </div>
+                    
+                                <div class="mb-3">
+                                    <label for="reps" class="form-label">Reps</label>
+                                    <input type="number" name="reps" id="reps" class="form-control" required>
+                                </div>
+                    
+                                <div class="mb-3">
+                                    <label for="date_achieved" class="form-label">Date Achieved</label>
+                                    <input type="date" name="date_achieved" id="date_achieved" class="form-control" required>
+                                </div>
+                    
+                                <button type="submit" class="btn btn-primary">Save Record</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+  
             
             <div class="mt-4">
                 <h5 class="fw-bold text-start">Settings</h5>
