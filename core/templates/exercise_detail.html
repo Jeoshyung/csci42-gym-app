@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="exercise-detail-card">
+    <h2>{{ exercise.name }}</h2>
+    <div class="exercise-image-container mb-3">
+        <img 
+            src="{{ exercise.images.0 }}" 
+            alt="{{ exercise.name }}" 
+            class="img-fluid exercise-image" 
+            data-image1="{{ exercise.images.0 }}" 
+            data-image2="{{ exercise.images.1 }}"
+            onclick="toggleImage(this)"
+        />
+    </div>   
+    <p><strong>Difficulty:</strong> {{ exercise.get_level_display }}</p>
+    <p><strong>Instructions:</strong> {{ exercise.instructions }}</p>
+    <p><strong>Primary Muscle Groups:</strong> 
+        {% for muscle in exercise.primary_muscles.all %}
+            {{ muscle.name }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            None
+        {% endfor %}
+    </p>
+    <p><strong>Secondary Muscle Groups:</strong> 
+        {% for muscle in exercise.secondary_muscles.all %}
+            {{ muscle.name }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            None
+        {% endfor %}
+    </p>
+
+
+
+    <a href="{% url 'workouts' %}" class="btn btn-primary">Back to Workouts</a>
+</div>
+
+
+<script>
+    let toggleInterval;
+    
+    function toggleImageOnTouch(imgElement) {
+        const image1 = imgElement.getAttribute('data-image1');
+        const image2 = imgElement.getAttribute('data-image2');
+        const currentSrc = imgElement.getAttribute('src');
+    
+        if (currentSrc === image1) {
+            imgElement.setAttribute('src', image2);
+        } else {
+            imgElement.setAttribute('src', image1);
+        }
+    }
+    
+    document.querySelectorAll('.exercise-image').forEach(function(imgElement) {
+        imgElement.addEventListener('touchstart', function() {
+            toggleInterval = setInterval(function() {
+                toggleImageOnTouch(imgElement);
+            }, 300); 
+        });
+    
+        imgElement.addEventListener('touchend', function() {
+            clearInterval(toggleInterval);
+        });
+    
+        imgElement.addEventListener('touchcancel', function() {
+            clearInterval(toggleInterval);
+        });
+    });
+    
+    </script>
+{% endblock %}
+

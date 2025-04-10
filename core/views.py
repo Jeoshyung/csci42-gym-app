@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -12,7 +12,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 import json
 
-
+def exercise_detail_view(request, exercise_id):
+    exercise = get_object_or_404(Exercise, id=exercise_id)
+    return render(request, 'exercise_detail.html', {'exercise': exercise})
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
