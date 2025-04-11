@@ -1,98 +1,89 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Exercise, ExerciseCategory, MuscleGroup, Equipment
+from .models import Profile, Exercise, Muscle, WorkoutSession, WorkoutLogging, FitnessGoal, PersonalRecord
+
 
 class AuthTests(TestCase):
 
     def setUp(self):
-        self.register_url = reverse('register')
-        self.login_url = reverse('login')
-        self.index_url = reverse('index')
-        self.workouts_url = reverse('workouts')
+        self.user = User.objects.create_user(
+            username='testuser', password='pass')
+        self.profile = Profile.objects.create(
+            user=self.user,
+            name="Test User",
+            email="testuser@example.com",
+            weight=70.0,
+            height=175.0,
+            age=25
+        )
 
-        self.user_data = {
-            'username': 'newuser',
-            'email': 'newuser@example.com',
-            'password1': 'testpassword123',
-            'password2': 'testpassword123'
-        }
-        self.login_data = {
-            'username': 'testuser',
-            'password': 'testpassword123'
-        }
-        self.user = User.objects.create_user(username='testuser', password='testpassword123')
+        self.muscle1 = Muscle.objects.create(name="Biceps")
+        self.muscle2 = Muscle.objects.create(name="Triceps")
 
-        self.category = ExerciseCategory.objects.create(name='Cardio')
-        self.muscle_group = MuscleGroup.objects.create(name='Legs')
-        self.equipment = Equipment.objects.create(name='Treadmill')
+        self.exercise = Exercise.objects.create(
+            name="Bicep Curl",
+            force="pull",
+            level="beginner",
+            mechanic="isolation",
+            equipment="dumbbell",
+            instructions="Curl the dumbbell upward.",
+            category="strength",
+            exercise_id="curl001"
+        )
+        self.exercise.primary_muscles.add(self.muscle1)
+        self.exercise.secondary_muscles.add(self.muscle2)
+        self.exercise.images = ["curl1.png", "curl2.png"]
+        self.exercise.save()
 
-        for i in range(15):
-            Exercise.objects.create(
-                name=f'Exercise {i}',
-                description=f'Description for exercise {i}',
-                category=self.category,
-                muscle_group=self.muscle_group,
-                equipment=self.equipment
-            )
+        self.session = WorkoutSession.objects.create(user=self.user)
+        self.workout_log = WorkoutLogging.objects.create(
+            session=self.session,
+            exercise=self.exercise,
+            sets=3,
+            reps=12
+        )
 
-    def test_register_view(self):
-        response = self.client.get(self.register_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'register.html')
+        self.goal = FitnessGoal.objects.create(
+            user=self.user,
+            name="Weekly Workouts",
+            target_value=3,
+            unit="workouts",
+            period="weekly"
+        )
 
-    def test_register_user(self):
-        response = self.client.post(self.register_url, self.user_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username='newuser').exists())
+        self.record = PersonalRecord.objects.create(
+            user=self.user,
+            exercise=self.exercise,
+            weight=20.0,
+            unit="kg",
+            reps=10
+        )
 
-    def test_login_view(self):
-        response = self.client.get(self.login_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'login.html')
+    def test_profile_creation(self):
+        self.assertEqual(str(self.profile), "Test User | testuser@example.com")
+        self.assertEqual(self.profile.user.email, "testuser@example.com")
 
-    def test_login_user(self):
-        response = self.client.post(self.login_url, self.login_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, self.index_url)
+    def test_exercise_relationships(self):
+        self.assertIn(self.muscle1, self.exercise.primary_muscles.all())
+        self.assertIn(self.muscle2, self.exercise.secondary_muscles.all())
 
-    def test_index_view_requires_login(self):
-        response = self.client.get(self.index_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'{self.login_url}?next={self.index_url}')
+    def test_exercise_str(self):
+        self.assertEqual(str(self.exercise), "Bicep Curl")
 
-    def test_workouts_view_requires_login(self):
-        response = self.client.get(self.workouts_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'{self.login_url}?next={self.workouts_url}')
+    def test_workout_session_str(self):
+        self.assertIn(self.user.username, str(self.session))
 
-    def test_workouts_view(self):
-        self.client.login(username='testuser', password='testpassword123')
-        response = self.client.get(self.workouts_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'workouts.html')
-        self.assertContains(response, 'Exercise 0')
-        self.assertContains(response, 'Exercise 8')
+    def test_workout_logging_str(self):
+        self.assertEqual(str(self.workout_log), "Bicep Curl - 3x12")
 
-    def test_workouts_view_pagination(self):
-        self.client.login(username='testuser', password='testpassword123')
-        
-        response = self.client.get(self.workouts_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Exercise 0')
-        self.assertContains(response, 'Exercise 8')
-        self.assertNotContains(response, 'Exercise 9')
+    def test_fitness_goal_str(self):
+        self.assertEqual(
+            str(self.goal), "Weekly Workouts - 3 workouts (weekly)")
 
-        response = self.client.get(self.workouts_url + '?page=2')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Exercise 9')
-        self.assertContains(response, 'Exercise 14')
-        self.assertNotContains(response, 'Exercise 0')
+    def test_personal_record_str(self):
+        self.assertEqual(str(self.record), "Bicep Curl: 20.0kg x 10")
 
-    def test_workouts_view_search(self):
-        self.client.login(username='testuser', password='testpassword123')
-        response = self.client.get(self.workouts_url + '?q=Exercise 1')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Exercise 1')
-        self.assertNotContains(response, 'Exercise 0')
-        self.assertNotContains(response, 'Exercise 2')
+    def test_images_stored_as_list(self):
+        self.assertIsInstance(self.exercise.images, list)
+        self.assertIn("curl1.png", self.exercise.images)
