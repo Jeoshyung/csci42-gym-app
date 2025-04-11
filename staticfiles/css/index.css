@@ -1,0 +1,197 @@
+/* Carousel Container */
+#dashboardCarousel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.carousel-indicators {
+    position: static;
+}
+
+/* Carousel Indicators */
+.carousel-indicators [data-bs-target] {
+    background-color: #bababa;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.carousel-indicators .active {
+    background-color: #4a00e0;
+}
+
+/* Carousel Items */
+.carousel-item {
+    padding: 20px;
+    text-align: center;
+}
+
+.carousel-item h5 {
+    font-weight: bold;
+    color: #4a00e0;
+}
+
+.carousel-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.carousel-item h5.fw-bold {
+    font-size: 24px;
+    color: #000; /* Black for emphasis */
+}
+
+/* Carousel circular progress bar */
+.progress-canvas {
+    width: 100px !important;
+    height: 100px !important;
+}
+
+.goal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 0 10px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Add Goal Button */
+.btn-primary {
+    background-color: #4a00e0;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    padding: 10px 20px;
+}
+
+.btn-primary:hover {
+    background-color: #3700b3;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.progress-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.icon-blue {
+    background-color: #E0E6FF;
+}
+.icon-green {
+    background-color: #D2F9E9; 
+}
+.icon-purple {
+    background-color: #DCEAFB; 
+}
+
+.icon-overlay {
+    width: 30px; 
+    height: 30px;
+    position: absolute;
+}
+
+.btn-trackfit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; 
+    gap: 8px; 
+}
+
+.btn-workout {
+    background-color: #4a00e0;
+}
+
+.btn-meal {
+    background-color: #228B22;
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+    filter: invert(100%);
+}
+
+.btn-trackfit:hover {
+    opacity: 0.9;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0; 
+}
+
+.dot-blue {
+    background-color: #4a00e0;
+}
+
+.dot-green {
+    background-color: #228B22;
+}
+
+.schedule-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left; 
+    width: 100%; 
+}
+
+.workout-name {
+    text-align: left;
+}
+
+.chart-container {
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    position: relative;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+}
