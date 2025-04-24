@@ -13,11 +13,12 @@ class Profile(models.Model):
     email = models.EmailField(max_length=254)
     weight = models.FloatField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)
+    age = models.PositiveIntegerField(null=True, blank=True)
     birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} | {self.email}'
-
+    
     def calculate_age(self):
         if self.birthdate:
             today = date.today()
@@ -187,8 +188,7 @@ class PersonalRecord(models.Model):
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notifications")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     title = models.CharField(max_length=255)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -198,8 +198,7 @@ class Notification(models.Model):
         ('workout_reminder', 'Workout Reminder'),
         ('progress', 'Progress')
     ])
-    related_record = models.ForeignKey(
-        PersonalRecord, on_delete=models.SET_NULL, null=True, blank=True)
+    related_record = models.ForeignKey(PersonalRecord, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.user.username}"

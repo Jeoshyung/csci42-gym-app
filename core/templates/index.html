@@ -99,7 +99,7 @@
         <div class="d-flex gap-3 mt-3">
             <a href="workoutlogging" class="btn-trackfit btn-workout">+ Log Workout</a>
             <a href="#" class="btn-trackfit btn-meal">
-                <img src="{% static 'images/button_icons/calendar.png' %}" class="btn-icon" alt="Fork and Knife"> Add Schedule
+                <img src="{% static 'images/button_icons/fork_and_knife.png' %}" class="btn-icon" alt="Fork and Knife"> Track Meal
             </a>
         </div>
 
@@ -148,38 +148,30 @@
                     }
                 });
             });
+        });
 
-            // Dynamic Weekly Activity Chart
-            const weeklyActivityData = JSON.parse('{{ serialized_weekly_activity|safe }}');
-            const ctx = document.getElementById('weeklyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: weeklyActivityData.labels,
-                    datasets: [{
-                        label: 'Activity',
-                        data: weeklyActivityData.data,
-                        backgroundColor: ['#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0'],
-                        borderRadius: 5
-                    }]
+        // Goal Progress Chart
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                datasets: [{
+                    label: 'Activity',
+                    data: [20, 30, 25, 70, 40, 50, 55],
+                    backgroundColor: ['#D1D5FE', '#D1D5FE', '#D1D5FE', '#4A00E0', '#D1D5FE', '#D1D5FE', '#D1D5FE'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,  
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
                 },
-                options: {
-                    responsive: true,  
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            min: 0,
-                            max: 5,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        },
-                        x: { grid: { display: false } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
+                plugins: { legend: { display: false } }
+            }
         });
     </script>
 </body>
