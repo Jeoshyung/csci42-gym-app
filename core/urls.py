@@ -12,7 +12,9 @@ from .views import (
     delete_personal_record_view,
     exercise_detail_view,
     notifications_view,
-    profile_setup_view
+    profile_setup_view,
+    update_weight,
+    update_height
 )
 from django.contrib.auth.views import LogoutView
 
@@ -35,4 +37,6 @@ urlpatterns = [
          exercise_detail_view, name='exercise_detail'),
     path('notifications/', notifications_view, name='notifications'),
     path('profilesetup/', profile_setup_view, name='profilesetup'),
+    path('update-weight/', update_weight, name='update_weight'),
+    path('update-height/', update_height, name='update_height'),
 ]

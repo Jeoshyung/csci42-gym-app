@@ -186,13 +186,25 @@
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Weight</p>
-                        <h5>{{ user.profile.weight|default:"N/A" }} kg</h5>
+                        <h5>
+                            {{ user.profile.weight|default:"N/A" }} kg
+                            <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editWeightModal">
+                                <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
+                                     style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
+                            </button>
+                        </h5>
                     </div>
                 </div>
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Height</p>
-                        <h5>{{ user.profile.height|default:"N/A" }} cm</h5>
+                        <h5>
+                            {{ user.profile.height|default:"N/A" }} cm
+                            <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editHeightModal">
+                                <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
+                                     style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
+                            </button>
+                        </h5>
                     </div>
                 </div>
             </div>
@@ -269,23 +281,23 @@
                                             {% endfor %}
                                         </select>
                                     </div>
-                        
+
                                     <div class="mb-3">
                                         <label for="weight" class="form-label">Weight</label>
                                         <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
                                     </div>
-                        
+
                                     <div class="mb-3">
                                         <label for="unit" class="form-label">Unit</label>
                                         <input type="text" name="unit" id="unit" class="form-control" required>
                                         <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
                                     </div>
-                        
+
                                     <div class="mb-3">
                                         <label for="reps" class="form-label">Reps</label>
                                         <input type="number" name="reps" id="reps" class="form-control" required>
                                     </div>
-    
+
                                     <button type="submit" class="btn btn-primary">Save Record</button>
                                 </form>
                             </div>
@@ -308,5 +320,48 @@
         </ul>
     </div>
     </div>
+
+<div class="modal fade" id="editWeightModal" tabindex="-1" aria-labelledby="editWeightModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editWeightModalLabel">Edit Weight</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_weight' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">Weight (kg)</label>
+                        <input type="number" name="weight" id="weight" class="form-control" step="0.01" value="{{ user.profile.weight|default:'' }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="editHeightModal" tabindex="-1" aria-labelledby="editHeightModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editHeightModalLabel">Edit Height</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_height' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="height" class="form-label">Height (cm)</label>
+                        <input type="number" name="height" id="height" class="form-control" step="0.01" value="{{ user.profile.height|default:'' }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 {% endblock %}

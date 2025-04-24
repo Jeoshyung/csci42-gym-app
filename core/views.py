@@ -37,10 +37,11 @@ def login_view(request):
                     request.session.modified = True
                 profile = user.profile
                 if not profile.weight or not profile.height or not profile.birthdate:
-                    messages.info(request, "Please complete your profile setup.")
+                    messages.info(
+                        request, "Please complete your profile setup.")
                     return redirect('profilesetup')
                 messages.success(request, f'Welcome back, {username}!')
-                return redirect('index') 
+                return redirect('index')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
@@ -54,7 +55,8 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             Profile.objects.create(user=user)
-            messages.success(request, 'Account created successfully! You can now log in.')
+            messages.success(
+                request, 'Account created successfully! You can now log in.')
             return redirect('login')
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -68,36 +70,32 @@ def index_view(request):
     user = request.user
     shanghai_tz = pytz.timezone('Asia/Shanghai')
     today = now().astimezone(shanghai_tz).date()
-    
-    # Calculate start of the week (Monday)
+
     start_of_week = today - timedelta(days=today.weekday())
     end_of_week = start_of_week + timedelta(days=6)
 
-    # Get all workout sessions for the current week
     weekly_sessions = WorkoutSession.objects.filter(
         user=user,
         date__date__gte=start_of_week,
         date__date__lte=end_of_week
     )
 
-    # Count workouts per day
     activity_per_day = [0] * 7
     for session in weekly_sessions:
         session_date = session.date.astimezone(shanghai_tz)
         weekday = session_date.weekday()
         activity_per_day[weekday] += 1
 
-    # Create labels for each day of current week
     week_labels = []
     for i in range(7):
         day = start_of_week + timedelta(days=i)
-        week_labels.append(day.strftime('%a'))  # Mon, Tue, etc.
+        week_labels.append(day.strftime('%a'))
 
     goals = FitnessGoal.objects.filter(user=user)
     serialized_goals = json.dumps([
         {
             "name": goal.name,
-            "current_value": 0,  # Replace with actual progress logic if needed
+            "current_value": 0,
             "target_value": goal.target_value,
             "unit": goal.unit,
             "period": goal.period
@@ -180,10 +178,9 @@ def add_goal_view(request):
         form = FitnessGoalForm(request.POST)
         if form.is_valid():
             goal = form.save(commit=False)
-            goal.user = request.user  # Associate the goal with the logged-in user
+            goal.user = request.user
             goal.save()
             messages.success(request, "Goal added successfully!")
-            # Redirect to the index page after adding the goal
             return redirect('index')
     else:
         form = FitnessGoalForm()
@@ -202,7 +199,6 @@ def add_personal_record_view(request):
         if exercise_id and weight and unit:
             exercise = get_object_or_404(Exercise, id=exercise_id)
 
-            # Create the personal record
             personal_record = PersonalRecord.objects.create(
                 user=request.user,
                 exercise=exercise,
@@ -211,7 +207,6 @@ def add_personal_record_view(request):
                 reps=reps
             )
 
-            # Create notification for the new personal record
             Notification.objects.create(
                 user=request.user,
                 title="New Personal Record!",
@@ -229,17 +224,14 @@ def add_personal_record_view(request):
 
 @login_required
 def delete_personal_record_view(request, record_id):
-    # Fetch the personal record or return a 404 if it doesn't exist
     personal_record = get_object_or_404(
         PersonalRecord, id=record_id, user=request.user)
 
     if request.method == 'POST':
-        # Delete the personal record
         personal_record.delete()
         messages.success(request, "Personal record deleted successfully!")
         return redirect('profile')
 
-    # Render a confirmation page
     return render(request, 'delete_personal_record.html', {'personal_record': personal_record})
 
 
@@ -262,9 +254,10 @@ def notifications_view(request):
         'unread_count': unread_count
     })
 
+
 @login_required
 def profile_setup_view(request):
-    profile = request.user.profile  
+    profile = request.user.profile
     if request.method == 'POST':
         form = ProfileSetupForm(request.POST, instance=profile)
         if form.is_valid():
@@ -272,7 +265,35 @@ def profile_setup_view(request):
             profile.age = profile.calculate_age()
             profile.save()
             messages.success(request, "Profile setup completed successfully!")
-            return redirect('index')  
+            return redirect('index')
     else:
         form = ProfileSetupForm(instance=profile)
     return render(request, 'profile_setup.html', {'form': form})
+
+
+@login_required
+def update_weight(request):
+    if request.method == 'POST':
+        weight = request.POST.get('weight')
+        if weight:
+            profile = request.user.profile
+            profile.weight = weight
+            profile.save()
+            messages.success(request, "Weight updated successfully!")
+        else:
+            messages.error(request, "Invalid weight value.")
+    return redirect('profile')
+
+
+@login_required
+def update_height(request):
+    if request.method == 'POST':
+        height = request.POST.get('height')
+        if height:
+            profile = request.user.profile
+            profile.height = height
+            profile.save()
+            messages.success(request, "Height updated successfully!")
+        else:
+            messages.error(request, "Invalid height value.")
+    return redirect('profile')
