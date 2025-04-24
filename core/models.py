@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date
 from django.urls import reverse
 
 # Create your models here.
@@ -13,9 +14,16 @@ class Profile(models.Model):
     weight = models.FloatField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
+    birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} | {self.email}'
+    
+    def calculate_age(self):
+        if self.birthdate:
+            today = date.today()
+            return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        return None
 
     def save(self, *args, **kwargs):
         if self.user.email != self.email:
