@@ -61,7 +61,6 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item {% if request.path == '/profile/' %}fw-bold{% endif %}" href="{% url 'profile' %}">Profile</a></li>
-                                <li><a class="dropdown-item {% if request.path == '/settings/' %}fw-bold{% endif %}" href="#">Settings</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="post" action="{% url 'logout' %}">
