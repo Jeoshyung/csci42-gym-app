@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% block header %}Notifications{% endblock %}
 {% block title %}Notifications | TrackFit{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Notifications</h2>
         {% if unread_count > 0 %}
         <span class="badge bg-primary">{{ unread_count }} unread</span>
         {% endif %}
