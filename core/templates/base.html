@@ -10,16 +10,19 @@
     <link rel="stylesheet" href="/core/static/css/style.css">
     <link rel="manifest" href="/core/templates/manifest.json">
     <style>
+        .navbar-bottom .nav-link.active, .navbar-bottom .nav-link.fw-bold { font-weight: bold !important; }
+        .navbar-bottom .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .navbar-bottom .nav-link i { display: block; margin-bottom: 2px; font-size: 1.3rem; }
+        .navbar-bottom .nav-link div { width: 100%; }
+        .main-margin-btm { margin-bottom: 2.5rem; }
         /* Hide top navbar on mobile, show on md+ */
         @media (max-width: 991.98px) {
             .navbar-top { display: none !important; }
             .navbar-bottom { display: flex !important; }
+            .main-margin-btm { margin-bottom: 7rem; }
         }
         @media (min-width: 992px) {
             .navbar-bottom { display: none !important; }
-        }
-        .navbar-bottom .nav-link.active, .navbar-bottom .nav-link.fw-bold {
-            font-weight: bold !important;
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -82,23 +85,23 @@
     </nav>
 
     <!-- Bottom Navbar (mobile only) -->
-    <nav class="navbar navbar-dark bg-primary navbar-bottom fixed-bottom justify-content-around" style="display: none;">
+    <nav class="navbar navbar-dark navbar-bottom fixed-bottom justify-content-around" style="display: none; background-color: #4a00e0;">
         <ul class="navbar-nav flex-row w-100 justify-content-around align-items-center">
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link px-2 {% if request.path == '/' %}fw-bold active{% endif %}" href="{% url 'index' %}">
+                    <a class="nav-link px-2 text-center {% if request.path == '/' %}fw-bold active{% endif %}" href="{% url 'index' %}">
                         <i class="bi bi-house"></i>
                         <div style="font-size: 0.75rem;">Dashboard</div>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 {% if request.path == '/workouts/' %}fw-bold active{% endif %}" href="{% url 'workouts' %}">
+                    <a class="nav-link px-2 text-center {% if request.path == '/workouts/' %}fw-bold active{% endif %}" href="{% url 'workouts' %}">
                         <i class="bi bi-bar-chart"></i>
                         <div style="font-size: 0.75rem;">Workouts</div>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 position-relative" href="{% url 'notifications' %}">
+                    <a class="nav-link px-2 text-center position-relative" href="{% url 'notifications' %}">
                         <i class="bi bi-bell"></i>
                         {% if unread_notification_count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -108,33 +111,21 @@
                         <div style="font-size: 0.75rem;">Alerts</div>
                     </a>
                 </li>
-                <li class="nav-item dropdown dropup">
-                    <a class="nav-link px-2 dropdown-toggle {% if request.path == '/profile/' or request.path == '/settings/' %}fw-bold active{% endif %}" 
-                       href="#" role="button" data-bs-toggle="dropdown">
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-center {% if request.path == '/profile/' %}fw-bold active{% endif %}" href="{% url 'profile' %}">
                         <i class="bi bi-person"></i>
-                        <div style="font-size: 0.75rem;">Account</div>
+                        <div style="font-size: 0.75rem;">Profile</div>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item {% if request.path == '/profile/' %}fw-bold{% endif %}" href="{% url 'profile' %}">Profile</a></li>
-                        <li><a class="dropdown-item {% if request.path == '/settings/' %}fw-bold{% endif %}" href="#">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item text-danger">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
                 </li>
             {% else %}
                 <li class="nav-item">
-                    <a class="nav-link px-2 {% if request.path == '/login/' %}fw-bold active{% endif %}" href="{% url 'login' %}">
+                    <a class="nav-link px-2 text-center {% if request.path == '/login/' %}fw-bold active{% endif %}" href="{% url 'login' %}">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div style="font-size: 0.75rem;">Login</div>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 {% if request.path == '/register/' %}fw-bold active{% endif %}" href="{% url 'register' %}">
+                    <a class="nav-link px-2 text-center {% if request.path == '/register/' %}fw-bold active{% endif %}" href="{% url 'register' %}">
                         <i class="bi bi-person-plus"></i>
                         <div style="font-size: 0.75rem;">Register</div>
                     </a>
@@ -143,7 +134,7 @@
         </ul>
     </nav>
 
-    <main class="container" style="padding-top: 2rem;">
+    <main class="container main-margin-btm" style="padding-top: 2rem;">
         {% if messages %}
         <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
             {% for message in messages %}
