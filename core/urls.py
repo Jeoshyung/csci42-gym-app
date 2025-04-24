@@ -17,10 +17,7 @@ urlpatterns = [
      path('add-goal/', add_goal_view, name='add_goal'),
      path("add-personal-record/", add_personal_record_view,
          name="add_personal_record"),
-    path('delete-personal-record/<int:record_id>/', delete_personal_record_view,
-         name='delete_personal_record'),
-    path('exercise/<int:exercise_id>/',
-         exercise_detail_view, name='exercise_detail'),
-    path('notifications/', notifications_view, name='notifications'),
-    path('profilesetup/', profile_setup_view, name='profilesetup'),
+     path('exercise/<int:exercise_id>/', exercise_detail_view, name='exercise_detail'),
+     path('notifications/', notifications_view, name='notifications'),
+     path('profilesetup/', profile_setup_view, name='profilesetup'),
 ]
