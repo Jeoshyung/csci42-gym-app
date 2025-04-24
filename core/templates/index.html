@@ -58,38 +58,6 @@
         </div>
 
         <div class="dashboard-card mt-3">
-
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold">Today's Progress</h5>
-                <span class="text-muted">{{ today_date }}</span>
-            </div>
-
-            <div class="d-flex justify-content-around mt-3">
-                <div class="progress-item">
-                    <div class="icon-circle icon-blue">
-                        <img src="{% static 'images/button_icons/calories.png' %}" class="icon-overlay" alt="Calories">
-                    </div>
-                    <p class="mb-0">Calories</p>
-                    <h5 class="fw-bold">--</h5>
-                </div>
-                <div class="progress-item">
-                    <div class="icon-circle icon-green">  
-                        <img src="{% static 'images/button_icons/exercise.png' %}" class="icon-overlay" alt="Exercise">
-                    </div>
-                    <p class="mb-0">Exercise</p>
-                    <h5 class="fw-bold">--</h5>
-                </div>
-                <div class="progress-item">
-                    <div class="icon-circle icon-purple"> 
-                        <img src="{% static 'images/button_icons/steps.png' %}" class="icon-overlay" alt="Steps">
-                    </div>
-                    <p class="mb-0">Steps</p>
-                    <h5 class="fw-bold">--</h5>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-card mt-3">
             <h5 class="fw-bold">Weekly Activity</h5>
             <div class="chart-container">
                 <canvas id="weeklyChart"></canvas>
@@ -98,28 +66,8 @@
 
         <div class="d-flex gap-3 mt-3">
             <a href="workoutlogging" class="btn-trackfit btn-workout">+ Log Workout</a>
-            <a href="#" class="btn-trackfit btn-meal">
-                <img src="{% static 'images/button_icons/calendar.png' %}" class="btn-icon" alt="Fork and Knife"> Add Schedule
-            </a>
         </div>
 
-        <div class="dashboard-card mt-3">
-            <h5 class="fw-bold">Today's Schedule</h5>
-            <div class="schedule-item">
-                <span class="dot dot-blue"></span>
-                <div class="schedule-text">
-                    <p class="mb-0 fw-bold workout-name">Morning Yoga</p>
-                    <small class="text-muted">7:00 AM - 7:15 AM</small>
-                </div>
-            </div>
-            <div class="schedule-item">
-                <span class="dot dot-green"></span>
-                <div class="schedule-text">
-                    <p class="mb-0 fw-bold workout-name">Strength Training</p>
-                    <small class="text-muted">7:00 AM - 7:15 AM</small>
-                </div>
-            </div>
-        </div>
 
     </div>
 
