@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from .forms import LoginForm, RegisterForm, FitnessGoalForm
+from .forms import LoginForm, RegisterForm, FitnessGoalForm, ProfileSetupForm
 from datetime import datetime
-from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification
+from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification, Profile
 from django.utils.timezone import now, timedelta
 from django.db.models import Sum
 from django.core.serializers.json import DjangoJSONEncoder
@@ -32,9 +32,12 @@ def login_view(request):
                 else:
                     request.session.set_expiry(0)
                     request.session.modified = True
-
+                profile = user.profile
+                if not profile.weight or not profile.height or not profile.birthdate:
+                    messages.info(request, "Please complete your profile setup.")
+                    return redirect('profilesetup')
                 messages.success(request, f'Welcome back, {username}!')
-                return redirect('index')
+                return redirect('index') 
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
@@ -47,8 +50,8 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.success(
-                request, 'Account created successfully! Please log in.')
+            Profile.objects.create(user=user)
+            messages.success(request, 'Account created successfully! You can now log in.')
             return redirect('login')
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -229,3 +232,18 @@ def notifications_view(request):
         'notifications': notifications,
         'unread_count': unread_count
     })
+
+@login_required
+def profile_setup_view(request):
+    profile = request.user.profile  
+    if request.method == 'POST':
+        form = ProfileSetupForm(request.POST, instance=profile)
+        if form.is_valid():
+            profile = form.save()
+            profile.age = profile.calculate_age()
+            profile.save()
+            messages.success(request, "Profile setup completed successfully!")
+            return redirect('index')  
+    else:
+        form = ProfileSetupForm(instance=profile)
+    return render(request, 'profile_setup.html', {'form': form})
