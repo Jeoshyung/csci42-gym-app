@@ -65,9 +65,88 @@
             filter: grayscale(80%);
         }
 
-        .setting-item span {
-            color: grey;
-            font-size: 1rem; /* Consistent text size */
+        .pr-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 8px;
+            width: 200px;
+            height: 250px;
+            margin-bottom: 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        .exercise-name-box {
+            height: 40px;
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #4a00e0;
+            color: white; 
+            border-radius: 8px;
+            padding: 5px 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .exercise-name-box h6 {
+            font-size: 1rem;
+            margin: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .pr-item .pr-icon {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pr-item .reps-sets {
+            margin-top: 10px;
+            font-size: 0.875rem;
+        }
+
+        .pr-item .mt-auto {
+            margin-top: auto;
+            font-size: 0.75rem;
+        }
+
+        .pr-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+
+        .add-pr-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            width: 100%; /* Ensures the button fills the rectangle */
+            text-align: left;
+            color: rgb(230, 58, 58); /* Default red text and icon */
+            transition: color 0.3s ease;
         }
 
         /* Specific styles for the logout button */
@@ -157,25 +236,56 @@
 
             <div class="mt-4">
                 <h5 class="fw-bold text-start">Personal Records</h5>
-                <div class="card p-4 shadow-sm rounded bg-light">
+                <div class="card p-4 shadow-sm rounded bg-light position-relative">
                     <div class="pr-container d-flex flex-nowrap overflow-auto">
                         {% for record in user.personal_records.all %}
-                        <div class="pr-item d-flex align-items-center p-3 shadow-sm rounded border record-item" 
-                            data-exercise-id="{{ record.exercise.id }}" 
-                            data-exercise-name="{{ record.exercise.name }}"
+                        <div class="pr-item d-flex flex-column align-items-center p-3 shadow-sm rounded border record-item"
                             data-bs-toggle="modal" 
-                            data-bs-target="#historyModal">
-                                <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon">
-                                <div>
-                                    <h6 class="mb-0">{{ record.exercise.name }}</h6>
-                                    <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
-                                    <p class="text-muted mb-0"><small>{{ record.date_achieved|date:"M d, Y" }}</small></p>
+                            data-bs-target="#prModal{{ record.id }}">
+                            <div class="exercise-name-box w-100 text-center">
+                                <h6 class="fw-bold text-truncate">{{ record.exercise.name }}</h6>
+                            </div>
+                            <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon">
+                            <div class="reps-sets text-center">
+                                <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
+                            </div>
+                            <div class="text-center mt-auto text-muted">
+                                <small>{{ record.date_achieved|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="prModal{{ record.id }}" tabindex="-1" aria-labelledby="prModalLabel{{ record.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="prModalLabel{{ record.id }}">{{ record.exercise.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Weight:</strong> {{ record.weight }} {{ record.unit }}</p>
+                                        <p><strong>Reps:</strong> {{ record.reps }}</p>
+                                        <p><strong>Date Achieved:</strong> {{ record.date_achieved|date:"M d, Y" }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <form method="POST" action="{% url 'delete_personal_record' record.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
                         {% empty %}
                             <p class="text-center text-muted">No personal records yet.</p>
                         {% endfor %}
                     </div>
+                    <button class="btn btn-primary rounded-circle position-absolute" 
+                            style="width: 50px; height: 50px; bottom: 20px; right: 20px;" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addPRModal">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
                 </div>
             </div>            
             
@@ -226,12 +336,7 @@
                                     <label for="reps" class="form-label">Reps</label>
                                     <input type="number" name="reps" id="reps" class="form-control" required>
                                 </div>
-                    
-                                <div class="mb-3">
-                                    <label for="date_achieved" class="form-label">Date Achieved</label>
-                                    <input type="date" name="date_achieved" id="date_achieved" class="form-control" required>
-                                </div>
-                    
+
                                 <button type="submit" class="btn btn-primary">Save Record</button>
                             </form>
                         </div>
