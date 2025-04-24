@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
 
 # Create your models here.
 
@@ -124,9 +125,29 @@ class Exercise(models.Model):
     images = models.JSONField(default=list)  # Store image paths as a list
     exercise_id = models.CharField(
         max_length=50, unique=True, default="temp_id")
+    popularity = models.IntegerField(default=0)  # Track exercise usage
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+    def get_all_targeted_muscles(self):
+        """Return all muscles targeted by this exercise"""
+        return self.primary_muscles.all() | self.secondary_muscles.all()
+
+    def get_muscle_group_combinations(self):
+        """Return common muscle group combinations for this exercise"""
+        primary_groups = set(muscle.name for muscle in self.primary_muscles.all())
+        secondary_groups = set(muscle.name for muscle in self.secondary_muscles.all())
+        return list(primary_groups | secondary_groups)
+
+    def increment_popularity(self):
+        """Increment the exercise's popularity counter"""
+        self.popularity += 1
+        self.save()
+
+    class Meta:
+        ordering = ['-popularity', 'name']  # Default ordering by popularity and name
 
 
 class WorkoutSession(models.Model):

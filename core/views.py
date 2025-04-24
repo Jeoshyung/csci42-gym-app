@@ -5,12 +5,16 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .forms import LoginForm, RegisterForm, FitnessGoalForm
 from datetime import datetime
-from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification
+from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification, Muscle
 from django.utils.timezone import now, timedelta
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 import json
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
+from django.db.models import Count
 
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
@@ -146,17 +150,57 @@ def workout_logger_view(request):
 
 @login_required
 def workouts_view(request):
+    # Get filter parameters
     query = request.GET.get('q', '')
+    sort_by = request.GET.get('sort', 'name')
+    selected_levels = request.GET.getlist('level')
+    selected_equipment = request.GET.getlist('equipment')
+    selected_muscle_ids = request.GET.getlist('muscle')
+    
+    # Initialize base queryset
+    exercises = Exercise.objects.all()
+    
+    # Apply filters
     if query:
-        exercises_list = Exercise.objects.filter(name__icontains=query)
-    else:
-        exercises_list = Exercise.objects.all()
+        exercises = exercises.filter(name__icontains=query)
+    
+    if selected_levels:
+        exercises = exercises.filter(level__in=selected_levels)
+    
+    if selected_equipment:
+        exercises = exercises.filter(equipment__in=selected_equipment)
+    
+    if selected_muscle_ids:
+        exercises = exercises.filter(primary_muscles__id__in=selected_muscle_ids)
+    
+    # Apply sorting
+    exercises = exercises.order_by(sort_by)
 
-    paginator = Paginator(exercises_list, 9)
+    # Get all muscles and selected muscle objects
+    all_muscles = Muscle.objects.all().order_by('name')
+    selected_muscles = Muscle.objects.filter(id__in=selected_muscle_ids)
 
+    # Pagination
+    paginator = Paginator(exercises, 9)
     page_number = request.GET.get('page')
     exercises = paginator.get_page(page_number)
-    return render(request, 'workouts.html', {'exercises': exercises, 'query': query})
+    
+    # Prepare context
+    context = {
+        'exercises': exercises,
+        'query': query,
+        'sort_by': sort_by,
+        'selected_levels': selected_levels,
+        'selected_equipment': selected_equipment,
+        'selected_muscles': selected_muscles,
+        'selected_muscle_ids': selected_muscle_ids,  # Add this for checkbox persistence
+        'all_muscles': all_muscles,
+        'level_choices': Exercise.LEVEL_CHOICES,
+        'equipment_choices': Exercise.EQUIPMENT_CHOICES,
+        'category_choices': Exercise.CATEGORY_CHOICES,
+    }
+    
+    return render(request, 'workouts.html', context)
 
 
 @login_required
