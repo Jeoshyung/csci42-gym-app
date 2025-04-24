@@ -11,6 +11,7 @@ from django.db.models import Sum
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 import json
+import pytz
 
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
@@ -60,49 +61,58 @@ def register_view(request):
 @login_required
 def index_view(request):
     user = request.user
+    shanghai_tz = pytz.timezone('Asia/Shanghai')
+    today = now().astimezone(shanghai_tz).date()
+    
+    # Calculate start of the week (Monday)
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
 
-    start_of_week = now().date() - timedelta(days=now().weekday()
-                                             )  # Start of the current week
+    # Get all workout sessions for the current week
     weekly_sessions = WorkoutSession.objects.filter(
-        user=user, date__date__gte=start_of_week)
-
-    total_workouts = weekly_sessions.count()
-    total_sets = sum(session.entries.aggregate(total_sets=Sum('sets'))[
-                     'total_sets'] or 0 for session in weekly_sessions)
-    total_reps = sum(session.entries.aggregate(total_reps=Sum('reps'))[
-                     'total_reps'] or 0 for session in weekly_sessions)
-
-    goals = FitnessGoal.objects.filter(user=user)
-
-    # Add progress percentage for each goal
-    for goal in goals:
-        if goal.period == 'weekly':
-            # SAMPLE LOGIC: For weekly goals, progress is the total number of workouts logged in the current week
-            progress_value = total_workouts if goal.name.lower() == 'workout' else 0
-            # Add more logic here for specific goals
-        else:
-            progress_value = 0  # Add logic for daily goals if needed
-        goal.current_value = progress_value
-        goal.progress_percentage = min(
-            100, (progress_value / goal.target_value) * 100)
-        goal.target_value = int(goal.target_value)  # for frontend display
-
-    # Serialize goals for JavaScript; for progress bars
-    serialized_goals = json.dumps(
-        [{'name': goal.name, 'current_value': goal.current_value,
-            'target_value': goal.target_value} for goal in goals],
-        cls=DjangoJSONEncoder
+        user=user,
+        date__date__gte=start_of_week,
+        date__date__lte=end_of_week
     )
 
+    # Count workouts per day
+    activity_per_day = [0] * 7
+    for session in weekly_sessions:
+        session_date = session.date.astimezone(shanghai_tz)
+        weekday = session_date.weekday()
+        activity_per_day[weekday] += 1
+
+    # Create labels for each day of current week
+    week_labels = []
+    for i in range(7):
+        day = start_of_week + timedelta(days=i)
+        week_labels.append(day.strftime('%a'))  # Mon, Tue, etc.
+
+    goals = FitnessGoal.objects.filter(user=user)
+    serialized_goals = json.dumps([
+        {
+            "name": goal.name,
+            "current_value": 0,  # Replace with actual progress logic if needed
+            "target_value": goal.target_value,
+            "unit": goal.unit,
+            "period": goal.period
+        }
+        for goal in goals
+    ])
+
     context = {
-        'today_date': datetime.today().strftime('%B %d, %Y'),
-        'total_workouts': total_workouts,
-        'total_sets': total_sets,
-        'total_reps': total_reps,
-        'goals': goals,
-        'serialized_goals': mark_safe(serialized_goals),
+        "total_workouts": weekly_sessions.count(),
+        "total_sets": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('sets'))['total'] or 0,
+        "total_reps": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('reps'))['total'] or 0,
+        "goals": goals,
+        "serialized_goals": mark_safe(serialized_goals),
+        "serialized_weekly_activity": mark_safe(json.dumps({
+            'data': activity_per_day,
+            'labels': week_labels
+        })),
+        "today_date": today.strftime("%B %d, %Y"),
     }
-    return render(request, 'index.html', context)
+    return render(request, "index.html", context)
 
 
 @login_required
@@ -229,48 +239,3 @@ def notifications_view(request):
         'notifications': notifications,
         'unread_count': unread_count
     })
-
-@login_required
-def index_view(request):
-    user = request.user
-
-    # Calculate start of the week (Monday)
-    today = now().date()
-    start_of_week = today - timedelta(days=today.weekday())
-    end_of_week = start_of_week + timedelta(days=6)
-
-    # Get all workout sessions for the current week
-    weekly_sessions = WorkoutSession.objects.filter(
-        user=user,
-        date__date__gte=start_of_week,
-        date__date__lte=end_of_week
-    )
-
-    # Count workouts per day (Monday=0, Sunday=6)
-    activity_per_day = [0] * 7
-    for session in weekly_sessions:
-        weekday = session.date.weekday()
-        activity_per_day[weekday] += 1
-
-    goals = FitnessGoal.objects.filter(user=user)
-    serialized_goals = json.dumps([
-        {
-            "name": goal.name,
-            "current_value": 0,  # Replace with actual progress logic if needed
-            "target_value": goal.target_value,
-            "unit": goal.unit,
-            "period": goal.period
-        }
-        for goal in goals
-    ])
-
-    context = {
-        "total_workouts": weekly_sessions.count(),
-        "total_sets": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('sets'))['total'] or 0,
-        "total_reps": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('reps'))['total'] or 0,
-        "goals": goals,
-        "serialized_goals": mark_safe(serialized_goals),
-        "serialized_weekly_activity": mark_safe(json.dumps(activity_per_day)),
-        "today_date": today.strftime("%B %d, %Y"),
-    }
-    return render(request, "index.html", context)

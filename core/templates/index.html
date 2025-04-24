@@ -150,16 +150,16 @@
             });
 
             // Dynamic Weekly Activity Chart
-            const weeklyActivity = JSON.parse('{{ serialized_weekly_activity|safe }}');
+            const weeklyActivityData = JSON.parse('{{ serialized_weekly_activity|safe }}');
             const ctx = document.getElementById('weeklyChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    labels: weeklyActivityData.labels,
                     datasets: [{
                         label: 'Activity',
-                        data: weeklyActivity,
-                        backgroundColor: ['#D1D5FE', '#D1D5FE', '#D1D5FE', '#4A00E0', '#D1D5FE', '#D1D5FE', '#D1D5FE'],
+                        data: weeklyActivityData.data,
+                        backgroundColor: ['#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0', '#4A00E0'],
                         borderRadius: 5
                     }]
                 },
@@ -170,7 +170,10 @@
                         y: { 
                             beginAtZero: true,
                             min: 0,
-                            max: 10
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
                         },
                         x: { grid: { display: false } }
                     },
