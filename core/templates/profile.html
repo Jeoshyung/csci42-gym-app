@@ -40,6 +40,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        /* General settings for other buttons */
         .setting-item {
             display: flex;
             align-items: center;
@@ -47,7 +48,8 @@
             background: white;
             border-radius: 8px;
             padding: 12px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 1rem; /* Ensure consistent text size */
         }
 
         .setting-item:hover {
@@ -55,57 +57,65 @@
             cursor: pointer;
         }
 
-        .icon-img {
-            width: 24px;
-            height: 24px;
-            filter: invert(50%) sepia(5%) saturate(10%) brightness(90%);
+        .setting-item .icon-img,
+        .setting-item i {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: grey;
+            filter: grayscale(80%);
         }
 
-        .pr-icon {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            margin-right: 10px;
+        .setting-item span {
+            color: grey;
+            font-size: 1rem; /* Consistent text size */
         }
 
-        .pr-item {
+        /* Specific styles for the logout button */
+        .logout-item {
             display: flex;
             align-items: center;
-            padding: 15px;
-            border: 1px solid #ddd;
+            gap: 10px;
+            background: white;
             border-radius: 8px;
-            width: 200px;
-            margin-bottom: 10px;
+            padding: 12px; /* Matches the padding of other buttons */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 1rem; /* Matches the font size of other buttons */
         }
 
-        .pr-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+        .logout-item:hover {
+            background-color: rgb(230, 58, 58); /* Red background on hover */
+            cursor: pointer;
         }
 
-
-        .add-pr-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 50px;
-            height: 50px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
+        .logout-button {
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: background 0.3s;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            width: 100%; /* Ensures the button fills the rectangle */
+            text-align: left;
+            color: rgb(230, 58, 58); /* Default red text and icon */
+            transition: color 0.3s ease;
         }
 
-        .add-pr-btn:hover {
-            background: #0056b3;
+        .logout-button i {
+            font-size: 1.5rem; /* Matches the icon size of other buttons */
+            color: rgb(230, 58, 58); /* Default red icon */
+            transition: color 0.3s ease;
+        }
+
+        .logout-button div {
+            font-size: 1rem; /* Matches the text size of other buttons */
+            color: rgb(230, 58, 58); /* Default red text */
+            transition: color 0.3s ease;
+        }
+
+        .logout-item:hover .logout-button,
+        .logout-item:hover .logout-button i,
+        .logout-item:hover .logout-button div {
+            color: white; /* White text and icon on hover */
         }
     </style>
 </head>
@@ -148,14 +158,14 @@
             <div class="mt-4">
                 <h5 class="fw-bold text-start">Personal Records</h5>
                 <div class="card p-4 shadow-sm rounded bg-light">
-                    <div class="pr-container d-flex flex-wrap justify-content-start gap-3">
+                    <div class="pr-container d-flex flex-nowrap overflow-auto">
                         {% for record in user.personal_records.all %}
                         <div class="pr-item d-flex align-items-center p-3 shadow-sm rounded border record-item" 
                             data-exercise-id="{{ record.exercise.id }}" 
                             data-exercise-name="{{ record.exercise.name }}"
                             data-bs-toggle="modal" 
                             data-bs-target="#historyModal">
-                                <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;">
+                                <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon">
                                 <div>
                                     <h6 class="mb-0">{{ record.exercise.name }}</h6>
                                     <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
@@ -165,11 +175,6 @@
                         {% empty %}
                             <p class="text-center text-muted">No personal records yet.</p>
                         {% endfor %}
-                        <div class="d-flex justify-content-end mt-4">
-                            <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center" 
-                                    style="width: 50px; height: 50px; font-size: 24px;" 
-                                    data-bs-toggle="modal" data-bs-target="#addPRModal"> + </button>
-                        </div>
                     </div>
                 </div>
             </div>            
@@ -254,6 +259,15 @@
                     <li class="list-group-item setting-item">
                         <img src="{% static 'images/button_icons/settings.png' %}" class="icon-img" alt="Settings Icon">
                         App Settings
+                    </li>
+                    <li class="list-group-item logout-item">
+                        <form method="post" action="{% url 'logout' %}" style="width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <div>Logout</div>
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
