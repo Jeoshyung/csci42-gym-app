@@ -12,9 +12,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 import json
 
+
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
     return render(request, 'exercise_detail.html', {'exercise': exercise})
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -189,7 +191,7 @@ def add_personal_record_view(request):
 
         if exercise_id and weight and unit:
             exercise = get_object_or_404(Exercise, id=exercise_id)
-            
+
             # Create the personal record
             personal_record = PersonalRecord.objects.create(
                 user=request.user,
@@ -216,18 +218,35 @@ def add_personal_record_view(request):
 
 
 @login_required
+def delete_personal_record_view(request, record_id):
+    # Fetch the personal record or return a 404 if it doesn't exist
+    personal_record = get_object_or_404(
+        PersonalRecord, id=record_id, user=request.user)
+
+    if request.method == 'POST':
+        # Delete the personal record
+        personal_record.delete()
+        messages.success(request, "Personal record deleted successfully!")
+        return redirect('profile')
+
+    # Render a confirmation page
+    return render(request, 'delete_personal_record.html', {'personal_record': personal_record})
+
+
+@login_required
 def notifications_view(request):
     notifications = Notification.objects.filter(user=request.user)
     unread_count = notifications.filter(is_read=False).count()
-    
+
     if request.method == 'POST':
         notification_id = request.POST.get('notification_id')
         if notification_id:
-            notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+            notification = get_object_or_404(
+                Notification, id=notification_id, user=request.user)
             notification.is_read = True
             notification.save()
             return redirect('notifications')
-    
+
     return render(request, 'notifications.html', {
         'notifications': notifications,
         'unread_count': unread_count
