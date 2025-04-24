@@ -33,36 +33,11 @@
         }
 
         .rounded {
-            border-radius: 12 px;
+            border-radius: 12px;
         }
 
         .shadow-sm {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* General settings for other buttons */
-        .setting-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: white;
-            border-radius: 8px;
-            padding: 12px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            font-size: 1rem; /* Ensure consistent text size */
-        }
-
-        .setting-item:hover {
-            background-color: #f1f1f1;
-            cursor: pointer;
-        }
-
-        .setting-item .icon-img,
-        .setting-item i {
-            width: 1.5rem;
-            height: 1.5rem;
-            color: grey;
-            filter: grayscale(80%);
         }
 
         .pr-item {
@@ -81,12 +56,12 @@
 
         .exercise-name-box {
             height: 40px;
-            overflow: hidden; 
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             background-color: #4a00e0;
-            color: white; 
+            color: white;
             border-radius: 8px;
             padding: 5px 10px;
             width: 100%;
@@ -125,7 +100,6 @@
             gap: 15px;
         }
 
-
         .add-pr-btn {
             position: absolute;
             bottom: 10px;
@@ -143,26 +117,25 @@
             gap: 10px;
             background: transparent;
             border: none;
-            width: 100%; /* Ensures the button fills the rectangle */
+            width: 100%;
             text-align: left;
-            color: rgb(230, 58, 58); /* Default red text and icon */
+            color: rgb(230, 58, 58);
             transition: color 0.3s ease;
         }
 
-        /* Specific styles for the logout button */
         .logout-item {
             display: flex;
             align-items: center;
             gap: 10px;
             background: white;
-            border-radius: 8px;
-            padding: 12px; /* Matches the padding of other buttons */
-            transition: background-color 0.3s ease, color 0.3s ease;
-            font-size: 1rem; /* Matches the font size of other buttons */
+            padding: 12px;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-size: 1rem;
         }
 
         .logout-item:hover {
-            background-color: rgb(230, 58, 58); /* Red background on hover */
+            background-color: rgb(230, 58, 58);
+            border-color: rgb(230, 58, 58);
             cursor: pointer;
         }
 
@@ -173,74 +146,75 @@
             gap: 10px;
             background: transparent;
             border: none;
-            width: 100%; /* Ensures the button fills the rectangle */
+            width: 100%;
             text-align: left;
-            color: rgb(230, 58, 58); /* Default red text and icon */
+            color: rgb(230, 58, 58);
             transition: color 0.3s ease;
         }
 
         .logout-button i {
-            font-size: 1.5rem; /* Matches the icon size of other buttons */
-            color: rgb(230, 58, 58); /* Default red icon */
+            font-size: 1.5rem;
+            color: rgb(230, 58, 58);
             transition: color 0.3s ease;
         }
 
         .logout-button div {
-            font-size: 1rem; /* Matches the text size of other buttons */
-            color: rgb(230, 58, 58); /* Default red text */
+            font-size: 1rem;
+            color: rgb(230, 58, 58);
             transition: color 0.3s ease;
         }
 
         .logout-item:hover .logout-button,
         .logout-item:hover .logout-button i,
         .logout-item:hover .logout-button div {
-            color: white; /* White text and icon on hover */
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container mt-4">
         <div class="card shadow-sm p-3">
-
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold">Profile</h5>
                 <i class="fas fa-edit text-primary fs-5"></i>
             </div>
-
             <div class="text-center mt-3">
                 <img src="{% static 'images/placeholder_profile.jpg' %}" class="profile-img" alt="Profile Picture">
                 <h4 class="mt-2">{{ user.username }}</h4>
-                <span class="badge bg-primary">Basic User</span>
             </div>
-            
             <div class="row text-center mt-4">
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Weight</p>
-                        <h5>{{ user.profile.weight|default:"N/A" }} kg</h5>
+                        <h5>
+                            {{ user.profile.weight|default:"N/A" }} kg
+                            <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editWeightModal">
+                                <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
+                                     style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
+                            </button>
+                        </h5>
                     </div>
                 </div>
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Height</p>
-                        <h5>{{ user.profile.height|default:"N/A" }} cm</h5>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card p-2 profile-stat-card">
-                        <p class="mb-1 text-muted">Level</p>
-                        <h5>Pro</h5>
+                        <h5>
+                            {{ user.profile.height|default:"N/A" }} cm
+                            <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editHeightModal">
+                                <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
+                                     style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
+                            </button>
+                        </h5>
                     </div>
                 </div>
             </div>
-
             <div class="mt-4">
                 <h5 class="fw-bold text-start">Personal Records</h5>
                 <div class="card p-4 shadow-sm rounded bg-light position-relative">
                     <div class="pr-container d-flex flex-nowrap overflow-auto">
                         {% for record in user.personal_records.all %}
                         <div class="pr-item d-flex flex-column align-items-center p-3 shadow-sm rounded border record-item"
-                            data-bs-toggle="modal" 
+                            data-bs-toggle="modal"
                             data-bs-target="#prModal{{ record.id }}">
                             <div class="exercise-name-box w-100 text-center">
                                 <h6 class="fw-bold text-truncate">{{ record.exercise.name }}</h6>
@@ -253,7 +227,6 @@
                                 <small>{{ record.date_achieved|date:"M d, Y" }}</small>
                             </div>
                         </div>
-
                         <div class="modal fade" id="prModal{{ record.id }}" tabindex="-1" aria-labelledby="prModalLabel{{ record.id }}" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -280,103 +253,115 @@
                             <p class="text-center text-muted">No personal records yet.</p>
                         {% endfor %}
                     </div>
-                    <button class="btn btn-primary rounded-circle position-absolute" 
-                            style="width: 50px; height: 50px; bottom: 20px; right: 20px;" 
-                            data-bs-toggle="modal" 
+                    <button class="btn btn-primary rounded-circle position-absolute"
+                            style="width: 50px; height: 50px; bottom: 20px; right: 20px;"
+                            data-bs-toggle="modal"
                             data-bs-target="#addPRModal">
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </div>
-            </div>            
-            
-            <div class="mt-4">
-                <h5 class="fw-bold text-start">Fitness Goals</h5>
-                <div class="p-3 rounded shadow-sm bg-white"> 
-                    <p class="mb-1">Weekly Workouts <span class="float-end fw-semibold">5/7</span></p>
-                    <div class="progress">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 71%"></div>
-                    </div>
-                </div>
-            </div>
+                <div class="modal fade" id="addPRModal" tabindex="-1" aria-labelledby="addPRModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addPRModalLabel">Add Personal Record</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addPRForm" method="POST" action="{% url 'add_personal_record' %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="exercise" class="form-label">Exercise</label>
+                                        <select name="exercise" id="exercise" class="form-select" required>
+                                            <option value="" disabled selected>Select an exercise</option>
+                                            {% for exercise in exercises %}
+                                                <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                                            {% empty %}
+                                                <option disabled>No exercises available</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
 
-            <div class="modal fade" id="addPRModal" tabindex="-1" aria-labelledby="addPRModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addPRModalLabel">Add Personal Record</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="addPRForm" method="POST" action="{% url 'add_personal_record' %}">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="exercise" class="form-label">Exercise</label>
-                                    <select name="exercise" id="exercise" class="form-select" required>
-                                        <option value="" disabled selected>Select an exercise</option>
-                                        {% for exercise in exercises %}
-                                            <option value="{{ exercise.id }}">{{ exercise.name }}</option>
-                                        {% empty %}
-                                            <option disabled>No exercises available</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                    
-                                <div class="mb-3">
-                                    <label for="weight" class="form-label">Weight</label>
-                                    <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
-                                </div>
-                    
-                                <div class="mb-3">
-                                    <label for="unit" class="form-label">Unit</label>
-                                    <input type="text" name="unit" id="unit" class="form-control" required>
-                                    <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
-                                </div>
-                    
-                                <div class="mb-3">
-                                    <label for="reps" class="form-label">Reps</label>
-                                    <input type="number" name="reps" id="reps" class="form-control" required>
-                                </div>
+                                    <div class="mb-3">
+                                        <label for="weight" class="form-label">Weight</label>
+                                        <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
+                                    </div>
 
-                                <button type="submit" class="btn btn-primary">Save Record</button>
-                            </form>
+                                    <div class="mb-3">
+                                        <label for="unit" class="form-label">Unit</label>
+                                        <input type="text" name="unit" id="unit" class="form-control" required>
+                                        <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="reps" class="form-label">Reps</label>
+                                        <input type="number" name="reps" id="reps" class="form-control" required>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Save Record</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
+        </div>
+        <div class="mt-4">
+            <li class="list-group-item logout-item rounded">
+                <form method="post" action="{% url 'logout' %}" style="width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <div>Logout</div>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+    </div>
+
+<div class="modal fade" id="editWeightModal" tabindex="-1" aria-labelledby="editWeightModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editWeightModalLabel">Edit Weight</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-  
-            
-            <div class="mt-4">
-                <h5 class="fw-bold text-start">Settings</h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item setting-item">
-                        <img src="{% static 'images/button_icons/account.png' %}" class="icon-img" alt="Account Icon">
-                        Account Details
-                    </li>
-                    <li class="list-group-item setting-item">
-                        <img src="{% static 'images/button_icons/notification.png' %}" class="icon-img" alt="Notifications Icon">
-                        Notifications
-                    </li>
-                    <li class="list-group-item setting-item">
-                        <img src="{% static 'images/button_icons/privacy.png' %}" class="icon-img" alt="Privacy Icon">
-                        Privacy
-                    </li>
-                    <li class="list-group-item setting-item">
-                        <img src="{% static 'images/button_icons/settings.png' %}" class="icon-img" alt="Settings Icon">
-                        App Settings
-                    </li>
-                    <li class="list-group-item logout-item">
-                        <form method="post" action="{% url 'logout' %}" style="width: 100%;">
-                            {% csrf_token %}
-                            <button type="submit" class="logout-button">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <div>Logout</div>
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_weight' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">Weight (kg)</label>
+                        <input type="number" name="weight" id="weight" class="form-control" step="0.01" value="{{ user.profile.weight|default:'' }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+
+<div class="modal fade" id="editHeightModal" tabindex="-1" aria-labelledby="editHeightModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editHeightModalLabel">Edit Height</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_height' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="height" class="form-label">Height (cm)</label>
+                        <input type="number" name="height" id="height" class="form-control" step="0.01" value="{{ user.profile.height|default:'' }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 {% endblock %}
