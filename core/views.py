@@ -21,6 +21,14 @@ from django.db.models import Count
 
 import pytz
 
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+
 
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
@@ -324,3 +332,34 @@ def profile_setup_view(request):
     else:
         form = ProfileSetupForm(instance=profile)
     return render(request, 'profile_setup.html', {'form': form})
+
+def password_reset_view(request):
+     if request.method == 'POST':
+         form = PasswordResetForm(request.POST)
+         if form.is_valid():
+             email = form.cleaned_data['email']
+             users = form.get_users(email)
+             if users:
+                 for user in users:
+                     current_site = get_current_site(request)
+                     subject = 'Password Reset Request'
+                     email_template_name = 'password_reset_email.html'
+                     context = {
+                         'email': email,
+                         'domain': current_site.domain,
+                         'site_name': current_site.name,
+                         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                         'user': user,
+                         'token': default_token_generator.make_token(user),
+                         'protocol': 'https' if request.is_secure() else 'http',
+                     }
+                     email_message = render_to_string(email_template_name, context)
+                     send_mail(subject, email_message, None, [email])
+                 messages.success(request, 'Password reset instructions have been sent to your email.')
+                 return redirect('login')
+             else:
+                 messages.error(request, 'No user is associated with this email address.')
+     else:
+         form = PasswordResetForm()
+ 
+     return render(request, 'password_reset.html', {'form': form})
