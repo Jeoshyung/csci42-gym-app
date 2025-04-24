@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import login_view, register_view, index_view, profile_view, workouts_view, workout_logger_view, add_goal_view, add_personal_record_view, exercise_detail_view
+from .views import login_view, register_view, index_view, profile_view, workouts_view, workout_logger_view, add_goal_view, add_personal_record_view, exercise_detail_view, notifications_view
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -17,5 +17,5 @@ urlpatterns = [
      path("add-personal-record/", add_personal_record_view,
          name="add_personal_record"),
      path('exercise/<int:exercise_id>/', exercise_detail_view, name='exercise_detail'),
-
+     path('notifications/', notifications_view, name='notifications'),
 ]

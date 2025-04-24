@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .forms import LoginForm, RegisterForm, FitnessGoalForm
 from datetime import datetime
-from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord
+from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification
 from django.utils.timezone import now, timedelta
 from django.db.models import Sum
 from django.core.serializers.json import DjangoJSONEncoder
@@ -15,6 +15,7 @@ import json
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
     return render(request, 'exercise_detail.html', {'exercise': exercise})
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -177,24 +178,54 @@ def add_goal_view(request):
 
 @login_required
 def add_personal_record_view(request):
-    exercises = Exercise.objects.all()
+    if request.method == 'POST':
+        exercise_id = request.POST.get('exercise')
+        weight = request.POST.get('weight')
+        unit = request.POST.get('unit')
+        reps = request.POST.get('reps', 1)
 
-    if request.method == "POST":
-        exercise_id = request.POST.get("exercise")
-        weight = request.POST.get("weight")
-        reps = request.POST.get("reps")
-        date_achieved = request.POST.get("date_achieved")
-
-        if exercise_id and weight and reps and date_achieved:
-            exercise = Exercise.objects.get(id=exercise_id)
-            PersonalRecord.objects.create(
+        if exercise_id and weight and unit:
+            exercise = get_object_or_404(Exercise, id=exercise_id)
+            
+            # Create the personal record
+            personal_record = PersonalRecord.objects.create(
                 user=request.user,
                 exercise=exercise,
-                weight=float(weight),
-                reps=int(reps),
-                date_achieved=date_achieved,
+                weight=weight,
+                unit=unit,
+                reps=reps
             )
-            return redirect("profile")
 
-    # This will render for both GET requests and failed POST requests
-    return render(request, "profile.html", {"exercises": exercises})
+            # Create notification for the new personal record
+            Notification.objects.create(
+                user=request.user,
+                title="New Personal Record!",
+                message=f"Congratulations! You've set a new personal record for {exercise.name}: {weight}{unit} x {reps} reps",
+                notification_type='personal_record',
+                related_record=personal_record
+            )
+
+            messages.success(request, "Personal record added successfully!")
+            return redirect('profile')
+
+    exercises = Exercise.objects.all()
+    return render(request, 'add_personal_record.html', {'exercises': exercises})
+
+
+@login_required
+def notifications_view(request):
+    notifications = Notification.objects.filter(user=request.user)
+    unread_count = notifications.filter(is_read=False).count()
+    
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        if notification_id:
+            notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return redirect('notifications')
+    
+    return render(request, 'notifications.html', {
+        'notifications': notifications,
+        'unread_count': unread_count
+    })

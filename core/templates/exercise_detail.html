@@ -1,45 +1,106 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ exercise.name }} | TrackFit{% endblock %}
 
 {% block content %}
-<div class="exercise-detail-card">
-    <h2>{{ exercise.name }}</h2>
-    <div class="exercise-image-container mb-3">
-        <img 
-            src="{{ exercise.images.0 }}" 
-            alt="{{ exercise.name }}" 
-            class="img-fluid exercise-image" 
-            data-image1="{{ exercise.images.0 }}" 
-            data-image2="{{ exercise.images.1 }}"
-            onclick="toggleImage(this)"
-        />
-    </div>   
-    <p><strong>Difficulty:</strong> {{ exercise.get_level_display }}</p>
-    <p><strong>Instructions:</strong> {{ exercise.instructions }}</p>
-    <p><strong>Primary Muscle Groups:</strong> 
-        {% for muscle in exercise.primary_muscles.all %}
-            {{ muscle.name }}{% if not forloop.last %}, {% endif %}
-        {% empty %}
-            None
-        {% endfor %}
-    </p>
-    <p><strong>Secondary Muscle Groups:</strong> 
-        {% for muscle in exercise.secondary_muscles.all %}
-            {{ muscle.name }}{% if not forloop.last %}, {% endif %}
-        {% empty %}
-            None
-        {% endfor %}
-    </p>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">{{ exercise.name }}</h2>
+                    
+                    <div class="exercise-image-container mb-4 text-center">
+                        <img 
+                            src="{{ exercise.images.0 }}" 
+                            alt="{{ exercise.name }}" 
+                            class="img-fluid exercise-image rounded" 
+                            style="max-height: 400px; object-fit: contain;"
+                            data-image1="{{ exercise.images.0 }}" 
+                            data-image2="{{ exercise.images.1 }}"
+                        />
+                    </div>
 
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Exercise Details</h5>
+                                    <p class="mb-2"><strong>Difficulty:</strong> 
+                                        <span class="badge bg-{% if exercise.level == 'beginner' %}success{% elif exercise.level == 'intermediate' %}warning{% else %}danger{% endif %}">
+                                            {{ exercise.get_level_display }}
+                                        </span>
+                                    </p>
+                                    <p class="mb-2"><strong>Category:</strong> {{ exercise.get_category_display }}</p>
+                                    <p class="mb-2"><strong>Equipment:</strong> {{ exercise.get_equipment_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Muscle Groups</h5>
+                                    <p class="mb-2"><strong>Primary:</strong> 
+                                        {% for muscle in exercise.primary_muscles.all %}
+                                            <span class="badge bg-primary me-1">{{ muscle.name }}</span>
+                                        {% empty %}
+                                            None
+                                        {% endfor %}
+                                    </p>
+                                    <p class="mb-2"><strong>Secondary:</strong> 
+                                        {% for muscle in exercise.secondary_muscles.all %}
+                                            <span class="badge bg-secondary me-1">{{ muscle.name }}</span>
+                                        {% empty %}
+                                            None
+                                        {% endfor %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Instructions</h5>
+                            <p class="card-text">{{ exercise.instructions }}</p>
+                        </div>
+                    </div>
 
-    <a href="{% url 'workouts' %}" class="btn btn-primary">Back to Workouts</a>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'workouts' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left"></i> Back to Workouts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<style>
+    .exercise-image-container {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+</style>
 
 <script>
-    let toggleInterval;
+    let autoCycleInterval;
+    let isHolding = false;
+    const CYCLE_SPEED = 1000; // 1 second between cycles
     
-    function toggleImageOnTouch(imgElement) {
+    function toggleImage(imgElement) {
         const image1 = imgElement.getAttribute('data-image1');
         const image2 = imgElement.getAttribute('data-image2');
         const currentSrc = imgElement.getAttribute('src');
@@ -51,22 +112,55 @@
         }
     }
     
+    function startAutoCycle(imgElement) {
+        if (!isHolding) {
+            autoCycleInterval = setInterval(() => {
+                toggleImage(imgElement);
+            }, CYCLE_SPEED);
+        }
+    }
+    
+    function stopAutoCycle() {
+        clearInterval(autoCycleInterval);
+    }
+    
     document.querySelectorAll('.exercise-image').forEach(function(imgElement) {
+        // Start auto-cycling when the page loads
+        startAutoCycle(imgElement);
+        
+        // Stop cycling when user holds the image
+        imgElement.addEventListener('mousedown', function() {
+            isHolding = true;
+            stopAutoCycle();
+        });
+        
         imgElement.addEventListener('touchstart', function() {
-            toggleInterval = setInterval(function() {
-                toggleImageOnTouch(imgElement);
-            }, 300); 
+            isHolding = true;
+            stopAutoCycle();
         });
-    
+        
+        // Resume cycling when user releases
+        imgElement.addEventListener('mouseup', function() {
+            isHolding = false;
+            startAutoCycle(imgElement);
+        });
+        
         imgElement.addEventListener('touchend', function() {
-            clearInterval(toggleInterval);
+            isHolding = false;
+            startAutoCycle(imgElement);
         });
-    
+        
+        // Also handle mouse/touch leave events
+        imgElement.addEventListener('mouseleave', function() {
+            isHolding = false;
+            startAutoCycle(imgElement);
+        });
+        
         imgElement.addEventListener('touchcancel', function() {
-            clearInterval(toggleInterval);
+            isHolding = false;
+            startAutoCycle(imgElement);
         });
     });
-    
-    </script>
+</script>
 {% endblock %}
 
