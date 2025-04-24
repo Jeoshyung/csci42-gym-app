@@ -229,3 +229,48 @@ def notifications_view(request):
         'notifications': notifications,
         'unread_count': unread_count
     })
+
+@login_required
+def index_view(request):
+    user = request.user
+
+    # Calculate start of the week (Monday)
+    today = now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # Get all workout sessions for the current week
+    weekly_sessions = WorkoutSession.objects.filter(
+        user=user,
+        date__date__gte=start_of_week,
+        date__date__lte=end_of_week
+    )
+
+    # Count workouts per day (Monday=0, Sunday=6)
+    activity_per_day = [0] * 7
+    for session in weekly_sessions:
+        weekday = session.date.weekday()
+        activity_per_day[weekday] += 1
+
+    goals = FitnessGoal.objects.filter(user=user)
+    serialized_goals = json.dumps([
+        {
+            "name": goal.name,
+            "current_value": 0,  # Replace with actual progress logic if needed
+            "target_value": goal.target_value,
+            "unit": goal.unit,
+            "period": goal.period
+        }
+        for goal in goals
+    ])
+
+    context = {
+        "total_workouts": weekly_sessions.count(),
+        "total_sets": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('sets'))['total'] or 0,
+        "total_reps": WorkoutLogging.objects.filter(session__in=weekly_sessions).aggregate(total=Sum('reps'))['total'] or 0,
+        "goals": goals,
+        "serialized_goals": mark_safe(serialized_goals),
+        "serialized_weekly_activity": mark_safe(json.dumps(activity_per_day)),
+        "today_date": today.strftime("%B %d, %Y"),
+    }
+    return render(request, "index.html", context)

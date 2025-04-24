@@ -148,30 +148,35 @@
                     }
                 });
             });
-        });
 
-        // Goal Progress Chart
-        const ctx = document.getElementById('weeklyChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-                datasets: [{
-                    label: 'Activity',
-                    data: [20, 30, 25, 70, 40, 50, 55],
-                    backgroundColor: ['#D1D5FE', '#D1D5FE', '#D1D5FE', '#4A00E0', '#D1D5FE', '#D1D5FE', '#D1D5FE'],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,  
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true },
-                    x: { grid: { display: false } }
+            // Dynamic Weekly Activity Chart
+            const weeklyActivity = JSON.parse('{{ serialized_weekly_activity|safe }}');
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    datasets: [{
+                        label: 'Activity',
+                        data: weeklyActivity,
+                        backgroundColor: ['#D1D5FE', '#D1D5FE', '#D1D5FE', '#4A00E0', '#D1D5FE', '#D1D5FE', '#D1D5FE'],
+                        borderRadius: 5
+                    }]
                 },
-                plugins: { legend: { display: false } }
-            }
+                options: {
+                    responsive: true,  
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            min: 0,
+                            max: 10
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
         });
     </script>
 </body>
