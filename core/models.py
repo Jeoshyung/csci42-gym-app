@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date
 from django.urls import reverse
+from django.utils import timezone
 
 # Create your models here.
 
@@ -12,10 +14,16 @@ class Profile(models.Model):
     email = models.EmailField(max_length=254)
     weight = models.FloatField(null=True, blank=True)
     height = models.FloatField(null=True, blank=True)
-    age = models.PositiveIntegerField(null=True, blank=True)
+    birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} | {self.email}'
+
+    def calculate_age(self):
+        if self.birthdate:
+            today = date.today()
+            return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        return None
 
     def save(self, *args, **kwargs):
         if self.user.email != self.email:
@@ -124,9 +132,29 @@ class Exercise(models.Model):
     images = models.JSONField(default=list)  # Store image paths as a list
     exercise_id = models.CharField(
         max_length=50, unique=True, default="temp_id")
+    popularity = models.IntegerField(default=0)  # Track exercise usage
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+    def get_all_targeted_muscles(self):
+        """Return all muscles targeted by this exercise"""
+        return self.primary_muscles.all() | self.secondary_muscles.all()
+
+    def get_muscle_group_combinations(self):
+        """Return common muscle group combinations for this exercise"""
+        primary_groups = set(muscle.name for muscle in self.primary_muscles.all())
+        secondary_groups = set(muscle.name for muscle in self.secondary_muscles.all())
+        return list(primary_groups | secondary_groups)
+
+    def increment_popularity(self):
+        """Increment the exercise's popularity counter"""
+        self.popularity += 1
+        self.save()
+
+    class Meta:
+        ordering = ['-popularity', 'name']  # Default ordering by popularity and name
 
 
 class WorkoutSession(models.Model):
@@ -177,3 +205,25 @@ class PersonalRecord(models.Model):
 
     def __str__(self):
         return f"{self.exercise.name}: {self.weight}{self.unit} x {self.reps}"
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications")
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    notification_type = models.CharField(max_length=50, choices=[
+        ('personal_record', 'Personal Record'),
+        ('workout_reminder', 'Workout Reminder'),
+        ('progress', 'Progress')
+    ])
+    related_record = models.ForeignKey(
+        PersonalRecord, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"
+
+    class Meta:
+        ordering = ['-created_at']

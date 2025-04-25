@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Exercise Library</h1>
+    
+    <!-- Sorting Controls -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a href="?sort=popularity" class="btn btn-outline-primary {% if sort_by == 'popularity' %}active{% endif %}">
+                    Most Popular
+                </a>
+                <a href="?sort=name" class="btn btn-outline-primary {% if sort_by == 'name' %}active{% endif %}">
+                    Name
+                </a>
+                <a href="?sort=muscle" class="btn btn-outline-primary {% if sort_by == 'muscle' %}active{% endif %}">
+                    Muscle Group
+                </a>
+                <a href="?sort=level" class="btn btn-outline-primary {% if sort_by == 'level' %}active{% endif %}">
+                    Difficulty Level
+                </a>
+                <a href="?sort=equipment" class="btn btn-outline-primary {% if sort_by == 'equipment' %}active{% endif %}">
+                    Equipment
+                </a>
+                <a href="?sort=category" class="btn btn-outline-primary {% if sort_by == 'category' %}active{% endif %}">
+                    Category
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exercise Grid -->
+    <div class="row">
+        {% for exercise in exercises %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if exercise.images %}
+                <img src="{{ exercise.images.0 }}" class="card-img-top" alt="{{ exercise.name }}">
+                {% else %}
+                <img src="{% static 'images/exercise-placeholder.jpg' %}" class="card-img-top" alt="Exercise Placeholder">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ exercise.name }}</h5>
+                    <p class="card-text">{{ exercise.instructions|truncatewords:20 }}</p>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">{{ exercise.get_level_display }}</span>
+                        <span class="badge bg-secondary">{{ exercise.get_equipment_display }}</span>
+                        <span class="badge bg-info">{{ exercise.get_category_display }}</span>
+                    </div>
+                    <div class="mb-2">
+                        {% for muscle in exercise.primary_muscles.all %}
+                        <span class="badge bg-info">{{ muscle.name }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'exercise_detail' exercise.id %}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center">No exercises found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Exercise pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if sort_by %}&sort={{ sort_by }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

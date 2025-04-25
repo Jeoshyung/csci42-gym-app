@@ -8,28 +8,8 @@ body {
     margin: 0;
 }
 
-.mobile-header {
-    background-color: #4a00e0;
-    color: white; 
-    padding: 1rem 0; 
+.container {
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.mobile-header h1 {
-    margin: 0; 
-    font-size: 1.5rem; 
-    font-weight: bold; 
-    letter-spacing: 0.05rem; 
-}
-
-.mobile-header .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .logo {
@@ -132,4 +112,3 @@ p {
 .login-form a:hover {
     text-decoration: underline;
 }
-

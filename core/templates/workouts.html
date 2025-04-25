@@ -1,144 +1,1044 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}TrackFit - Workouts{% endblock %}
+{% block header %}Workouts{% endblock %}
 
 {% block cards_css %}
 <style>
     .card {
         height: 100%;
+        transition: transform 0.2s;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-size: 0.9rem;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     .card-body {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        padding: 0.75rem;
+    }
+
+    .collapsible {
+        background-color: white;
+        color: #495057;
+        cursor: pointer;
+        padding: 1rem;
+        width: 100%;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        text-align: left;
+        outline: none;
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    .collapsible:hover {
+        background-color: #f8f9fa;
+    }
+    .collapsible:after {
+        content: '\002B';
+        font-size: 1.2rem;
+        color: #495057;
+        float: right;
+        margin-left: 5px;
+        transition: transform 0.2s ease;
+    }
+    .collapsible.active:after {
+        content: '\2212';
+        transform: rotate(180deg);
+    }
+    .content {
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-out;
+        background-color: white;
+    }
+    .content.show {
+        max-height: 500px;
+        padding: 1rem;
+    }
+
+    /* Filter Options */
+    .filter-option {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    .filter-option:hover {
+        background-color: #f8f9fa;
+    }
+    .filter-option input[type="checkbox"] {
+        margin-right: 0.5rem;
+        width: 1rem;
+        height: 1rem;
+    }
+    .filter-option label {
+        margin: 0;
+        cursor: pointer;
+        flex-grow: 1;
+    }
+
+    /* Exercise Image */
+    .card-img-top {
+        height: 120px;
+        object-fit: cover;
+        width: 100%;
+        cursor: pointer;
+    }
+
+    /* Exercise Card */
+    .exercise-card {
+        margin-bottom: 1rem !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    }
+
+    .exercise-card .card-body {
+        padding: 0.75rem !important;
+    }
+
+    .exercise-card .card-img-top {
+        height: 120px !important;
+        object-fit: cover !important;
+        cursor: pointer !important;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+        .exercise-tag {
+            font-size: 0.8125rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
+        
+        .tag-equipment, .tag-muscle {
+            padding-left: 1.5rem !important;
+        }
+        
+        .tag-equipment::before, .tag-muscle::before {
+            left: 0.5rem !important;
+            font-size: 0.7rem !important;
+        }
+    }
+
+    /* Sort Dropdown Styles */
+    .sort-dropdown {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .sort-dropdown .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        padding: 0.75rem 1rem;
+        border-radius: 0.375rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sort-dropdown .dropdown-toggle:hover,
+    .sort-dropdown .dropdown-toggle:focus {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .sort-dropdown .dropdown-toggle::after {
+        margin-left: 0.5rem;
+    }
+
+    .sort-dropdown .dropdown-menu {
+        width: 100%;
+        padding: 0.5rem 0;
+        margin-top: 0.125rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .sort-dropdown .dropdown-item {
+        padding: 0.5rem 1rem;
+        color: #495057;
+        cursor: pointer;
+    }
+
+    .sort-dropdown .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .sort-dropdown .dropdown-item.active {
+        background-color: #e9ecef;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    /* Clear Filters Button */
+    .clear-filters {
+        background-color: #B22222;
+        border-color: #B22222;
+        color: white;
+    }
+
+    .clear-filters:hover {
+        background-color: #9e1e1e;
+        border-color: #9e1e1e;
+    }
+
+    .clear-filters:active {
+        background-color: #8b1a1a;
+        border-color: #8b1a1a;
+    }
+
+    .clear-filters i {
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .clear-filters {
+            padding: 0.4rem 1rem !important;
+            font-size: 0.8rem !important;
+        }
+        .clear-filters i {
+            font-size: 0.8rem;
+        }
+        .exercise-card .card-img-top {
+            height: 100px !important;
+        }
+        .card-title {
+            font-size: 0.9rem;
+        }
+        .card-text {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .col-12, .col-sm-6, .col-md-4 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .col-12 {
+            width: 50% !important;
+        }
+        .exercise-card .card-img-top {
+            height: 90px !important;
+        }
+    }
+
+    /* Filter Dropdown Styles */
+    .filter-dropdown {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .filter-dropdown .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        padding: 0.75rem 1rem;
+        border-radius: 0.375rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .filter-dropdown .dropdown-toggle:hover,
+    .filter-dropdown .dropdown-toggle:focus {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .filter-dropdown .dropdown-toggle::after {
+        margin-left: 0.5rem;
+    }
+
+    .filter-dropdown .dropdown-menu {
+        width: 100%;
+        padding: 0.5rem 0;
+        margin-top: 0.125rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .filter-dropdown .dropdown-item {
+        padding: 0.5rem 1rem;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-dropdown .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .filter-dropdown .dropdown-item input[type="checkbox"] {
+        margin: 0;
+    }
+
+    .filter-dropdown .dropdown-item label {
+        margin: 0;
+        cursor: pointer;
+        flex-grow: 1;
+    }
+
+    .filter-dropdown .selected-count {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-left: 0.5rem;
+    }
+
+    /* Selected Filters Display */
+    .selected-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .selected-filter {
+        background-color: #0d6efd;
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .selected-filter:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    .selected-filter:active {
+        background-color: #0a58ca;
+        transform: translateY(0);
+    }
+
+    .remove-filter {
+        font-size: 1.25rem;
+        line-height: 1;
+        margin-left: 0.25rem;
+        opacity: 0.8;
+    }
+
+    .remove-filter:hover {
+        opacity: 1;
+    }
+
+    /* Button States */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn:active {
+        transform: translateY(1px);
+        box-shadow: none;
+    }
+
+    /* Search Button */
+    .search-form .btn {
+        background-color: #6610f2;
+        border-color: #6610f2;
+        color: white;
+    }
+
+    .search-form .btn:hover {
+        background-color: #5a0ed9;
+        border-color: #5a0ed9;
+    }
+
+    .search-form .btn:active {
+        background-color: #4f0cc0;
+        border-color: #4f0cc0;
+    }
+
+    /* Filter Tags */
+    .selected-filters .btn {
+        background-color: #8B0000;
+        border-color: #8B0000;
+        color: white;
+    }
+
+    .selected-filters .btn:hover {
+        background-color: #7a0000;
+        border-color: #7a0000;
+    }
+
+    .selected-filters .btn:active {
+        background-color: #6a0000;
+        border-color: #6a0000;
+    }
+
+    /* View Details Button */
+    .card .btn {
+        background-color: #6610f2;
+        border-color: #6610f2;
+        color: white;
+    }
+
+    .card .btn:hover {
+        background-color: #5a0ed9;
+        border-color: #5a0ed9;
+    }
+
+    .card .btn:active {
+        background-color: #4f0cc0;
+        border-color: #4f0cc0;
+    }
+
+    /* Pagination */
+    .pagination .page-link {
+        color: #6610f2;
+        border-color: #6610f2;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #f8f9fa;
+        color: #5a0ed9;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #6610f2;
+        border-color: #6610f2;
+        color: white;
+    }
+
+    .pagination .page-item.active .page-link:hover {
+        background-color: #5a0ed9;
+        border-color: #5a0ed9;
+    }
+
+    /* Dropdown Buttons */
+    .dropdown-toggle {
+        background-color: white;
+        border-color: #dee2e6;
+        color: #495057;
+    }
+
+    .dropdown-toggle:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .dropdown-toggle:active {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Workouts</h1>
+<div class="container mt-4">
     
     <!-- Search Bar -->
-    <form method="get" action="{% url 'workouts' %}" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="q" class="form-control" placeholder="Search for exercises" value="{{ query|default_if_none:'' }}">
-            <button class="btn btn-primary" type="submit">Search</button>
+    <div class="row mb-4">
+        <div class="col-12">
+            <form method="GET" class="d-flex search-form">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search workouts..." value="{{ query }}" style="border-color: #6610f2;">
+                <button type="submit" class="btn" style="background-color: #6610f2; border-color: #6610f2; color: white;">Search</button>
+            </form>
         </div>
-    </form>
+    </div>
 
+    <!-- Sort and Filter Sections -->
+    <div class="row mb-4">
+        <div class="col-12 col-md-6 mb-3">
+            <div class="sort-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sort by
+                    {% if sort_by %}
+                        : 
+                        {% if sort_by == 'name' %}Name (A-Z)
+                        {% elif sort_by == '-name' %}Name (Z-A)
+                        {% elif sort_by == 'level' %}Level (Easy to Hard)
+                        {% elif sort_by == '-level' %}Level (Hard to Easy)
+                        {% elif sort_by == 'category' %}Category (A-Z)
+                        {% elif sort_by == '-category' %}Category (Z-A)
+                        {% endif %}
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item {% if sort_by == 'name' %}active{% endif %}" onclick="updateSort('name')">Name (A-Z)</a></li>
+                    <li><a class="dropdown-item {% if sort_by == '-name' %}active{% endif %}" onclick="updateSort('-name')">Name (Z-A)</a></li>
+                    <li><a class="dropdown-item {% if sort_by == 'level' %}active{% endif %}" onclick="updateSort('level')">Level (Easy to Hard)</a></li>
+                    <li><a class="dropdown-item {% if sort_by == '-level' %}active{% endif %}" onclick="updateSort('-level')">Level (Hard to Easy)</a></li>
+                    <li><a class="dropdown-item {% if sort_by == 'category' %}active{% endif %}" onclick="updateSort('category')">Category (A-Z)</a></li>
+                    <li><a class="dropdown-item {% if sort_by == '-category' %}active{% endif %}" onclick="updateSort('-category')">Category (Z-A)</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <div class="filter-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="difficultyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Difficulty
+                    {% if selected_levels %}
+                    <span class="selected-count">({{ selected_levels|length }})</span>
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="difficultyDropdown">
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="difficulty-beginner" name="level" value="beginner" {% if 'beginner' in selected_levels %}checked{% endif %} onchange="updateFilters()">
+                            <label for="difficulty-beginner">Beginner</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="difficulty-intermediate" name="level" value="intermediate" {% if 'intermediate' in selected_levels %}checked{% endif %} onchange="updateFilters()">
+                            <label for="difficulty-intermediate">Intermediate</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="difficulty-expert" name="level" value="expert" {% if 'expert' in selected_levels %}checked{% endif %} onchange="updateFilters()">
+                            <label for="difficulty-expert">Expert</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <div class="filter-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="equipmentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Equipment
+                    {% if selected_equipment %}
+                    <span class="selected-count">({{ selected_equipment|length }})</span>
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="equipmentDropdown">
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-medicine-ball" name="equipment" value="medicine ball" {% if 'medicine ball' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-medicine-ball">Medicine Ball</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-body-only" name="equipment" value="body only" {% if 'body only' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-body-only">Body Only</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-foam-roll" name="equipment" value="foam roll" {% if 'foam roll' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-foam-roll">Foam Roll</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-exercise-ball" name="equipment" value="exercise ball" {% if 'exercise ball' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-exercise-ball">Exercise Ball</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-ez-curl-bar" name="equipment" value="e-z curl bar" {% if 'e-z curl bar' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-ez-curl-bar">E-Z Curl Bar</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-dumbbell" name="equipment" value="dumbbell" {% if 'dumbbell' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-dumbbell">Dumbbell</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-bands" name="equipment" value="bands" {% if 'bands' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-bands">Bands</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-kettlebells" name="equipment" value="kettlebells" {% if 'kettlebells' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-kettlebells">Kettlebells</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-cable" name="equipment" value="cable" {% if 'cable' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-cable">Cable</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-machine" name="equipment" value="machine" {% if 'machine' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-machine">Machine</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-barbell" name="equipment" value="barbell" {% if 'barbell' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-barbell">Barbell</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" id="equipment-other" name="equipment" value="other" {% if 'other' in selected_equipment %}checked{% endif %} onchange="updateFilters()">
+                            <label for="equipment-other">Other</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <div class="filter-dropdown">
+                <button class="btn dropdown-toggle" type="button" id="muscleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Muscle Groups
+                    {% if selected_muscle_ids %}
+                    <span class="selected-count">({{ selected_muscle_ids|length }})</span>
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="muscleDropdown">
+                    {% for muscle in all_muscles %}
+                    <li>
+                        <div class="dropdown-item">
+                            <input type="checkbox" 
+                                   id="muscle-{{ muscle.id }}" 
+                                   name="muscle" 
+                                   value="{{ muscle.id }}" 
+                                   {% if muscle.id|stringformat:"s" in selected_muscle_ids %}checked{% endif %} 
+                                   onchange="updateFilters()">
+                            <label for="muscle-{{ muscle.id }}">{{ muscle.name }}</label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Filters Display -->
+    {% if selected_levels or selected_equipment or selected_muscles %}
+    <div class="selected-filters mb-4">
+        {% for level in selected_levels %}
+        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('level', '{{ level }}')">
+            {{ level|title }}
+            <span class="ms-1">×</span>
+        </button>
+        {% endfor %}
+        
+        {% for equipment in selected_equipment %}
+        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('equipment', '{{ equipment }}')">
+            {{ equipment|title }}
+            <span class="ms-1">×</span>
+        </button>
+        {% endfor %}
+        
+        {% for muscle in selected_muscles %}
+        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('muscle', '{{ muscle.id }}')">
+            {{ muscle.name|title }}
+            <span class="ms-1">×</span>
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="col-12">
+        <button class="btn btn-danger btn-sm mb-3" style="background-color: #B22222; border-color: #B22222;" onclick="clearAllFilters()">
+            <i class="bi bi-x-circle me-1"></i>
+            Clear All Filters
+        </button>
+    </div>
+
+    <!-- Exercise Grid -->
     <div class="row">
         {% for exercise in exercises %}
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
+        <div class="col-12 col-sm-6 col-md-4 mb-4">
+            <div class="card h-100 exercise-card">
+                {% if exercise.images %}
+                <img src="{{ exercise.images.0 }}" class="card-img-top" alt="{{ exercise.name }}"
+                                data-image1="{{ exercise.images.0 }}" 
+                                data-image2="{{ exercise.images.1 }}">
+                {% else %}
+                <img src="{% static 'images/exercise-placeholder.jpg' %}" class="card-img-top" alt="Exercise Placeholder">
+                {% endif %}
+                <div class="card-body">
                     <h5 class="card-title">{{ exercise.name }}</h5>
-                    <p class="card-text">{{ exercise.description }}</p>
-                    <p class="card-text"><small class="text-muted">Category: {{ exercise.category }}</small></p>
-                    <p class="card-text">
-                        <small class="text-muted">Primary Muscles: 
-                            {% for muscle in exercise.primary_muscles.all %}
-                                {{ muscle.name }}{% if not forloop.last %}, {% endif %}
-                            {% empty %}
-                                None
-                            {% endfor %}
-                        </small>
-                    </p>
-                    <p class="card-text">
-                        <small class="text-muted">Secondary Muscles: 
-                            {% for muscle in exercise.secondary_muscles.all %}
-                                {{ muscle.name }}{% if not forloop.last %}, {% endif %}
-                            {% empty %}
-                                None
-                            {% endfor %}
-                        </small>
-                    </p>
-                    <p class="card-text"><small class="text-muted">Equipment: {{ exercise.equipment }}</small></p>
-
-                    <div class="exercise-image-container mb-3">
-                        <img 
-                            src="{{ exercise.images.0 }}" 
-                            alt="{{ exercise.name }}" 
-                            class="img-fluid exercise-image" 
-                            data-image1="{{ exercise.images.0 }}" 
-                            data-image2="{{ exercise.images.1 }}"
-                            onclick="toggleImage(this)"
-                        />
+                    <div class="exercise-tags">
+                        <span class="exercise-tag tag-level-{{ exercise.level|lower }}">{{ exercise.level }}</span>
+                        <span class="exercise-tag tag-equipment">{{ exercise.equipment }}</span>
+                        {% for muscle in exercise.primary_muscles.all %}
+                        <span class="exercise-tag tag-muscle">{{ muscle.name }}</span>
+                        {% endfor %}
                     </div>
+                    <p class="card-text">{{ exercise.instructions|truncatewords:20 }}</p>
+                    <a href="{% url 'exercise_detail' exercise.id %}" class="btn mt-2" style="background-color: #6610f2; border-color: #6610f2; color: white;">View Details</a>
                 </div>
             </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center">No exercises found.</p>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Pagination controls -->
-    <nav aria-label="Page navigation">
+    <!-- Pagination -->
+    {% if exercises.has_other_pages %}
+    <nav aria-label="Exercise pagination" class="mt-4">
         <ul class="pagination justify-content-center">
-            <!-- Link to the first page -->
-            <li class="page-item">
-                <a class="page-link" href="?q={{ query }}&page=1" aria-label="First">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                </a>
-            </li>
-
             {% if exercises.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?q={{ query }}&page={{ exercises.previous_page_number }}" aria-label="Previous">
+                <a class="page-link" href="?page={{ exercises.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% for level in selected_levels %}&level={{ level }}{% endfor %}{% for equipment in selected_equipment %}&equipment={{ equipment }}{% endfor %}{% for muscle in selected_muscles %}&muscle={{ muscle.id }}{% endfor %}" aria-label="Previous" style="color: #6610f2; border-color: #6610f2;">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </span>
             </li>
             {% endif %}
 
             {% for num in exercises.paginator.page_range %}
-            {% if exercises.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > exercises.number|add:'-3' and num < exercises.number|add:'3' %}
-            <li class="page-item"><a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a></li>
+            {% if num > exercises.number|add:'-3' and num < exercises.number|add:'3' %}
+            <li class="page-item {% if exercises.number == num %}active{% endif %}">
+                <a class="page-link {% if exercises.number == num %}" style="background-color: #6610f2; border-color: #6610f2; color: white;"{% else %}" style="color: #6610f2; border-color: #6610f2;"{% endif %} href="?page={{ num }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% for level in selected_levels %}&level={{ level }}{% endfor %}{% for equipment in selected_equipment %}&equipment={{ equipment }}{% endfor %}{% for muscle in selected_muscles %}&muscle={{ muscle.id }}{% endfor %}">{{ num }}</a>
+            </li>
             {% endif %}
             {% endfor %}
 
             {% if exercises.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?q={{ query }}&page={{ exercises.next_page_number }}" aria-label="Next">
+                <a class="page-link" href="?page={{ exercises.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if query %}&q={{ query }}{% endif %}{% for level in selected_levels %}&level={{ level }}{% endfor %}{% for equipment in selected_equipment %}&equipment={{ equipment }}{% endfor %}{% for muscle in selected_muscles %}&muscle={{ muscle.id }}{% endfor %}" aria-label="Next" style="color: #6610f2; border-color: #6610f2;">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </span>
             </li>
             {% endif %}
-            
-            <!-- Link to the last page -->
-            <li class="page-item">
-                <a class="page-link" href="?q={{ query }}&page={{ exercises.paginator.num_pages }}" aria-label="Last">
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                </a>
-            </li>
         </ul>
     </nav>
+    {% endif %}
 </div>
 
 <script>
-    function toggleImage(imgElement) {
-        const image1 = imgElement.getAttribute('data-image1');
-        const image2 = imgElement.getAttribute('data-image2');
-        const currentSrc = imgElement.getAttribute('src');
+// Toggle Collapsible Sections
+function toggleCollapsible(button) {
+    button.classList.toggle('active');
+    const content = button.nextElementSibling;
+    content.classList.toggle('show');
+}
 
-        // Toggle between the two images
-        if (currentSrc === image1) {
-            imgElement.setAttribute('src', image2);
-        } else {
-            imgElement.setAttribute('src', image1);
-        }
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.collapsible') && !event.target.closest('.content')) {
+        const allContents = document.querySelectorAll('.content');
+        const allButtons = document.querySelectorAll('.collapsible');
+        
+        allContents.forEach(content => {
+            content.classList.remove('show');
+        });
+        
+        allButtons.forEach(button => {
+            button.classList.remove('active');
+        });
     }
+});
+
+// Update Sort
+function updateSort(value) {
+    const form = document.createElement('form');
+    form.method = 'GET';
+    
+    // Preserve search query
+    const searchQuery = new URLSearchParams(window.location.search).get('q');
+    if (searchQuery) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'q';
+        input.value = searchQuery;
+        form.appendChild(input);
+    }
+    
+    // Add sort value
+    const sortInput = document.createElement('input');
+    sortInput.type = 'hidden';
+    sortInput.name = 'sort';
+    sortInput.value = value;
+    form.appendChild(sortInput);
+    
+    // Preserve all current filters
+    const params = new URLSearchParams(window.location.search);
+    
+    // Add levels
+    params.getAll('level').forEach(level => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'level';
+        input.value = level;
+        form.appendChild(input);
+    });
+    
+    // Add equipment
+    params.getAll('equipment').forEach(equipment => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'equipment';
+        input.value = equipment;
+        form.appendChild(input);
+    });
+    
+    // Add muscles
+    params.getAll('muscle').forEach(muscle => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'muscle';
+        input.value = muscle;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Clear All Filters
+function clearAllFilters() {
+    const form = document.createElement('form');
+    form.method = 'GET';
+    
+    // Only preserve search query if exists
+    const searchQuery = new URLSearchParams(window.location.search).get('q');
+    if (searchQuery) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'q';
+        input.value = searchQuery;
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+let toggleInterval;
+
+function toggleImageOnTouch(imgElement) {
+    const image1 = imgElement.getAttribute('data-image1');
+    const image2 = imgElement.getAttribute('data-image2');
+    const currentSrc = imgElement.getAttribute('src');
+
+    if (currentSrc === image1 && image2) {
+        imgElement.setAttribute('src', image2);
+    } else {
+        imgElement.setAttribute('src', image1);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const exerciseImages = document.querySelectorAll('.card-img-top');
+    
+    exerciseImages.forEach(img => {
+        // Remove the onclick attribute
+        img.removeAttribute('onclick');
+        
+        // Add click event for desktop
+        img.addEventListener('click', function() {
+            toggleImageOnTouch(this);
+        });
+        
+        // Add touch events for mobile
+        img.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            toggleInterval = setInterval(() => {
+                toggleImageOnTouch(this);
+        }, 300); 
+        }, { passive: false });
+
+        img.addEventListener('touchend', function() {
+        clearInterval(toggleInterval);
+    });
+
+        img.addEventListener('touchcancel', function() {
+        clearInterval(toggleInterval);
+        });
+    });
+});
+
+// Update Filters
+function updateFilters() {
+    const form = document.createElement('form');
+    form.method = 'GET';
+    
+    // Preserve search query if exists
+    const searchQuery = new URLSearchParams(window.location.search).get('q');
+    if (searchQuery) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'q';
+        input.value = searchQuery;
+        form.appendChild(input);
+    }
+    
+    // Preserve sort if exists
+    const sortValue = new URLSearchParams(window.location.search).get('sort');
+    if (sortValue) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'sort';
+        input.value = sortValue;
+        form.appendChild(input);
+    }
+    
+    // Add selected levels
+    const selectedLevels = document.querySelectorAll('input[name="level"]:checked');
+    selectedLevels.forEach(checkbox => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'level';
+        input.value = checkbox.value;
+        form.appendChild(input);
+    });
+    
+    // Add selected equipment
+    const selectedEquipment = document.querySelectorAll('input[name="equipment"]:checked');
+    selectedEquipment.forEach(checkbox => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'equipment';
+        input.value = checkbox.value;
+        form.appendChild(input);
+    });
+    
+    // Add selected muscles
+    const selectedMuscles = document.querySelectorAll('input[name="muscle"]:checked');
+    selectedMuscles.forEach(checkbox => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'muscle';
+        input.value = checkbox.value;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Remove Filter
+function removeFilter(type, value) {
+    const form = document.createElement('form');
+    form.method = 'GET';
+    
+    // Preserve search query
+    const searchQuery = new URLSearchParams(window.location.search).get('q');
+    if (searchQuery) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'q';
+        input.value = searchQuery;
+        form.appendChild(input);
+    }
+    
+    // Preserve sort
+    const sortValue = new URLSearchParams(window.location.search).get('sort');
+    if (sortValue) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'sort';
+        input.value = sortValue;
+        form.appendChild(input);
+    }
+    
+    // Add all selected filters except the removed one
+    const params = new URLSearchParams(window.location.search);
+    
+    // Handle levels
+    if (type !== 'level') {
+        params.getAll('level').forEach(level => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'level';
+            input.value = level;
+            form.appendChild(input);
+        });
+    } else {
+        params.getAll('level').forEach(level => {
+            if (level !== value) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'level';
+                input.value = level;
+                form.appendChild(input);
+            }
+        });
+    }
+    
+    // Handle equipment
+    if (type !== 'equipment') {
+        params.getAll('equipment').forEach(equipment => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'equipment';
+            input.value = equipment;
+            form.appendChild(input);
+        });
+    } else {
+        params.getAll('equipment').forEach(equipment => {
+            if (equipment !== value) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'equipment';
+                input.value = equipment;
+                form.appendChild(input);
+            }
+        });
+    }
+    
+    // Handle muscles
+    if (type !== 'muscle') {
+        params.getAll('muscle').forEach(muscle => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'muscle';
+            input.value = muscle;
+            form.appendChild(input);
+        });
+    } else {
+        params.getAll('muscle').forEach(muscle => {
+            if (muscle !== value) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'muscle';
+                input.value = muscle;
+                form.appendChild(input);
+            }
+        });
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
 {% endblock %}
