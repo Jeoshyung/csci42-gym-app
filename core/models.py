@@ -163,6 +163,14 @@ class WorkoutSession(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)
 
+    def get_exercised_muscles(self):
+        """Fetch all muscles exercised in this session."""
+        primary_muscles = Muscle.objects.filter(
+            primary_exercises__workoutlogging__session=self)
+        secondary_muscles = Muscle.objects.filter(
+            secondary_exercises__workoutlogging__session=self)
+        return primary_muscles.union(secondary_muscles)
+
     def __str__(self):
         return f"{self.user.username} - {self.date.strftime('%Y-%m-%d %H:%M')}"
 

@@ -112,3 +112,25 @@ p {
 .login-form a:hover {
     text-decoration: underline;
 }
+
+#muscle-map {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: block;
+}
+
+#muscle-map path {
+    fill: #ccc; /* Default color for unexercised muscles */
+    stroke: #000;
+    stroke-width: 1;
+    transition: fill 0.3s ease;
+}
+
+#muscle-map path:hover {
+    fill: #ff9800; /* Highlight on hover */
+}
+
+#muscle-map path.exercised {
+    fill: #4caf50; /* Green for exercised muscles */
+}

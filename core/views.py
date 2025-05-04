@@ -385,3 +385,12 @@ def password_reset_view(request):
          form = PasswordResetForm()
  
      return render(request, 'password_reset.html', {'form': form})
+
+@login_required
+def muscle_heatmap_view(request):
+    logged_exercises = WorkoutLogging.objects.filter(session__user=request.user).values_list('exercise', flat=True)
+    primary_muscles = Muscle.objects.filter(primary_exercises__id__in=logged_exercises)
+    secondary_muscles = Muscle.objects.filter(secondary_exercises__id__in=logged_exercises)
+    exercised_muscles = primary_muscles.union(secondary_muscles).values_list('name', flat=True)
+
+    return render(request, 'muscle_heatmap.html', {'exercised_muscles': list(exercised_muscles)})
