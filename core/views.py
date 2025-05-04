@@ -255,23 +255,36 @@ def add_personal_record_view(request):
         if exercise_id and weight and unit:
             exercise = get_object_or_404(Exercise, id=exercise_id)
 
-            personal_record = PersonalRecord.objects.create(
+            personal_record, created = PersonalRecord.objects.get_or_create(
                 user=request.user,
                 exercise=exercise,
-                weight=weight,
-                unit=unit,
-                reps=reps
+                defaults={
+                    'weight': weight,
+                    'unit': unit,
+                    'reps': reps
+                }
             )
+
+            if not created:
+                if float(weight) > personal_record.weight or int(reps) > personal_record.reps:
+                    personal_record.weight = weight
+                    personal_record.unit = unit
+                    personal_record.reps = reps
+                    personal_record.save()
+                    messages.success(request, "Personal record updated successfully!")
+                else:
+                    messages.info(request, "No update made. The new record is not better than the existing one.")
+            else:
+                messages.success(request, "Personal record added successfully!")
 
             Notification.objects.create(
                 user=request.user,
-                title="New Personal Record!",
+                title="New Personal Record!" if created else "Personal Record Updated!",
                 message=f"Congratulations! You've set a new personal record for {exercise.name}: {weight}{unit} x {reps} reps",
                 notification_type='personal_record',
                 related_record=personal_record
             )
 
-            messages.success(request, "Personal record added successfully!")
             return redirect('profile')
 
     exercises = Exercise.objects.all()
