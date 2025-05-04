@@ -336,7 +336,7 @@
                 <form method="POST" action="{% url 'update_weight' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="weight" class="form-label">Weight (kg)</label>
+                        <label for="weight" id="weight-label" class="form-label">Weight ({{ profile.weight_unit }})</label>
                         <input type="number" name="weight" id="weight" class="form-control" step="0.01" value="{{ user.profile.weight|default:'' }}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -357,7 +357,7 @@
                 <form method="POST" action="{% url 'update_height' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="height" class="form-label">Height (cm)</label>
+                        <label for="height" id="height-label" class="form-label">Height ({{ profile.height_unit }})</label>
                         <input type="number" name="height" id="height" class="form-control" step="0.01" value="{{ user.profile.height|default:'' }}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -381,12 +381,22 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Reload the page to reflect updated values
+                location.reload(); 
             } else {
                 alert('Failed to update unit.');
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const heightLabel = document.getElementById('height-label');
+        const currentUnit = "{{ profile.height_unit }}"; 
+        heightLabel.textContent = `Height (${currentUnit})`; 
+
+        const weightLabel = document.getElementById('weight-label');
+        const currentWeightUnit = "{{ profile.weight_unit }}";
+        weightLabel.textContent = `Weight (${currentWeightUnit})`;
+    });
 </script>
 </body>
 {% endblock %}
