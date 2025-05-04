@@ -13,7 +13,11 @@ class Profile(models.Model):
     name = models.CharField(max_length=63)
     email = models.EmailField(max_length=254)
     weight = models.FloatField(null=True, blank=True)
+    weight_unit = models.CharField(
+        max_length=10, choices=[('kg', 'Kilograms'), ('lbs', 'Pounds')], default='kg')
     height = models.FloatField(null=True, blank=True)
+    height_unit = models.CharField(
+        max_length=10, choices=[('cm', 'Centimeters'), ('ft', 'Feet')], default='cm')
     birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
@@ -30,6 +34,16 @@ class Profile(models.Model):
             self.user.email = self.email
             self.user.save()
         super(Profile, self).save(*args, **kwargs)
+
+    def convert_weight_to_kg(self):
+        if self.weight_unit == 'lbs':
+            return self.weight * 0.453592
+        return self.weight
+
+    def convert_height_to_cm(self):
+        if self.height_unit == 'ft':
+            return self.height * 30.48
+        return self.height
 
 # class ExerciseCategory(models.Model):
 #     name = models.CharField(max_length=255)

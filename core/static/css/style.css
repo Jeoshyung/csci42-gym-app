@@ -133,3 +133,12 @@ p {
     text-decoration: underline;
 }
 
+.unit-dropdown {
+    width: 80px; 
+    text-align: center;
+    padding: 5px;
+}
+
+.input-group .form-control {
+    flex: 3;
+}
