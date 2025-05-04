@@ -35,15 +35,25 @@ class Profile(models.Model):
             self.user.save()
         super(Profile, self).save(*args, **kwargs)
 
-    def convert_weight_to_kg(self):
-        if self.weight_unit == 'lbs':
-            return self.weight * 0.453592
-        return self.weight
+    def convert_weight(self, target_unit):
+        """Convert weight to the target unit."""
+        if self.weight is None:
+            return None
+        if self.weight_unit == 'kg' and target_unit == 'lbs':
+            return round(self.weight * 2.20462, 2)  
+        elif self.weight_unit == 'lbs' and target_unit == 'kg':
+            return round(self.weight / 2.20462, 2)  
+        return self.weight  
 
-    def convert_height_to_cm(self):
-        if self.height_unit == 'ft':
-            return self.height * 30.48
-        return self.height
+    def convert_height(self, target_unit):
+        """Convert height to the target unit."""
+        if self.height is None:
+            return None
+        if self.height_unit == 'cm' and target_unit == 'ft':
+            return round(self.height / 30.48, 2)  
+        elif self.height_unit == 'ft' and target_unit == 'cm':
+            return round(self.height * 30.48, 2)  
+        return self.height  
 
 # class ExerciseCategory(models.Model):
 #     name = models.CharField(max_length=255)
