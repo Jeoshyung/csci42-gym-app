@@ -290,8 +290,13 @@
 
                                     <div class="mb-3">
                                         <label for="unit" class="form-label">Unit</label>
-                                        <input type="text" name="unit" id="unit" class="form-control" required>
-                                        <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
+                                        <select name="unit" id="unit" class="form-select" required>
+                                            <option value="" disabled selected>Select a unit</option>
+                                            <option value="kg">kg</option>
+                                            <option value="lbs">lbs</option>
+                                            <option value="plates">plates</option>
+                                            <option value="bodyweight">bodyweight</option>
+                                        </select>
                                     </div>
 
                                     <div class="mb-3">
