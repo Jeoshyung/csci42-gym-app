@@ -31,6 +31,75 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 
 
+def has_worked_out_today(user):
+    """Check if user has worked out today"""
+    today = timezone.now().date()
+    return WorkoutSession.objects.filter(
+        user=user,
+        date__date=today
+    ).exists()
+
+
+def check_workout_streak(user):
+    """Check user's workout streak and return the number of consecutive days"""
+    today = timezone.now().date()
+    streak = 0
+    current_date = today
+    
+    while True:
+        if not WorkoutSession.objects.filter(user=user, date__date=current_date).exists():
+            break
+        streak += 1
+        current_date -= timedelta(days=1)
+    
+    return streak
+
+
+def create_milestone_notification(user, streak):
+    """Create milestone notifications based on streak length"""
+    if streak == 7:
+        Notification.objects.create(
+            user=user,
+            title="One Week Milestone! 🎉",
+            message="Amazing! You've worked out for 7 days in a row. Keep up the fantastic work - you're building great habits!",
+            notification_type='progress'
+        )
+    elif streak == 30:
+        Notification.objects.create(
+            user=user,
+            title="One Month Milestone! 🏆",
+            message="Incredible achievement! You've maintained your workout routine for a full month. You're an inspiration!",
+            notification_type='progress'
+        )
+    elif streak == 100:
+        Notification.objects.create(
+            user=user,
+            title="100 Days Strong! 💪",
+            message="What an extraordinary accomplishment! 100 days of consistent workouts. You're unstoppable!",
+            notification_type='progress'
+        )
+
+
+def create_welcome_back_notification(user):
+    """Create a welcome back notification for the user's first workout of the day"""
+    Notification.objects.create(
+        user=user,
+        title="Welcome Back! 💪",
+        message="Great to see you back for another workout! Consistency is the key to success.",
+        notification_type='workout_reminder'
+    )
+
+
+def create_welcome_notification(user):
+    """Create a welcome notification for first-time users"""
+    Notification.objects.create(
+        user=user,
+        title="Welcome to TrackFit! 🎉",
+        message="Welcome to your fitness journey! We're excited to help you achieve your fitness goals. Start by logging your first workout!",
+        notification_type='progress'
+    )
+
+
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
     return render(request, 'exercise_detail.html', {'exercise': exercise})
@@ -52,6 +121,11 @@ def login_view(request):
                 else:
                     request.session.set_expiry(0)
                     request.session.modified = True
+                
+                # Check if this is the user's first login
+                if not user.workout_sessions.exists():
+                    create_welcome_notification(user)
+                
                 profile = user.profile
                 if not profile.weight or not profile.height or not profile.birthdate:
                     messages.info(
@@ -192,6 +266,10 @@ def workout_logger_view(request):
 
         if selected_exercise_id and sets and reps:
             exercise = Exercise.objects.get(id=selected_exercise_id)
+            
+            # Check if this is the first workout of the day
+            if not has_worked_out_today(request.user):
+                create_welcome_back_notification(request.user)
 
             session, created = WorkoutSession.objects.get_or_create(
                 user=request.user,
@@ -202,6 +280,11 @@ def workout_logger_view(request):
             WorkoutLogging.objects.create(
                 session=session, exercise=exercise, sets=sets, reps=reps
             )
+            
+            # Check workout streak and create milestone notifications
+            streak = check_workout_streak(request.user)
+            create_milestone_notification(request.user, streak)
+            
             messages.success(request, "Workout logged successfully!")
             return redirect('workout_logger')
 
