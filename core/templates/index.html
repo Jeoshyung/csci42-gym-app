@@ -14,11 +14,15 @@
 <body>
     <div class="container mt-4">
         <div id="dashboardCarousel" class="carousel slide mb-4">
-        
-            <!-- Carousel Items -->
             <div class="carousel-inner mt-3">
-                <!-- First Slide: Weekly Progress -->
                 <div class="carousel-item active">
+                    <div class="text-center py-4">
+                        <h3 class="fw-bold">Hello, {{ user.username }}!</h3>
+                        <p class="text-muted mt-2">Swipe to see your weekly snapshot</p>
+                    </div>
+                </div>
+                
+                <div class="carousel-item">
                     <h5 class="fw-bold">Your Weekly Snapshot</h5>
                     <div class="d-flex justify-content-around mt-3">
                         <div>
@@ -35,27 +39,12 @@
                         </div>
                     </div>
                 </div>
-        
-                <!-- Second Slide: Fitness Goals -->
-                <div class="carousel-item">
-                    <h5 class="fw-bold">Your Goals</h5>
-                    <div class="d-flex justify-content-around mt-3">
-                        {% for goal in goals %}
-                        <div class="goal-item text-center">
-                            <canvas id="goalProgress{{ forloop.counter }}" class="progress-canvas"></canvas>
-                            <p class="mb-0">{{ goal.name }} ({{goal.period}})</p>
-                            <h5 class="fw-bold">{{ goal.current_value }}/{{ goal.target_value }} {{goal.unit}}</h5>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <a href="{% url 'add_goal' %}" class="btn btn-primary mt-3">Add a Goal</a>
-                </div>
             </div>
-            <!-- Indicators -->
-            <!-- <div class="carousel-indicators">
-                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
-                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="1"></button>
-            </div> -->
+            
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#dashboardCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            </div>
         </div>
 
         <div class="dashboard-card mt-3">
@@ -75,29 +64,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const goals = JSON.parse('{{ serialized_goals|safe }}'); // Pass the goals data from the backend
-            goals.forEach((goal, index) => {
-                const ctx = document.getElementById(`goalProgress${index + 1}`).getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [goal.current_value, goal.target_value - goal.current_value],
-                            backgroundColor: ['#4caf50', '#e0e0e0'], // Green for progress, gray for remaining
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        cutout: '70%', // Makes it look like a circular progress bar
-                        plugins: {
-                            tooltip: { enabled: false }, // Disable tooltips
-                            legend: { display: false } // Hide legend
-                        }
-                    }
-                });
-            });
-
             // Dynamic Weekly Activity Chart
             const weeklyActivityData = JSON.parse('{{ serialized_weekly_activity|safe }}');
             const ctx = document.getElementById('weeklyChart').getContext('2d');
