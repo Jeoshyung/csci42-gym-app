@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <h2 class="mt-4">Log Your Workout</h2>
+    <h2 class="mt-4">Log Your Exercise</h2>
     <form method="POST" class="mt-3">
         {% csrf_token %}
         <div class="mb-3">
@@ -23,10 +23,10 @@
             <label for="reps" class="form-label">Reps</label>
             <input type="number" name="reps" id="reps" class="form-control" min="1" required>
         </div>
-        <button type="submit" class="btn btn-primary">Log Workout</button>
+        <button type="submit" class="btn btn-primary">Log Exercise</button>
     </form>
 
-    <h3 class="mt-5">Past Workouts</h3>
+    <h3 class="mt-5">Past Exercises</h3>
     {% for session in past_sessions %}
     <div class="card mt-3">
         <div class="card-body">
@@ -44,7 +44,7 @@
         </div>
     </div>
     {% empty %}
-    <p>No past workouts logged yet.</p>
+    <p>No past exercises logged yet.</p>
     {% endfor %}
 </div>
 {% endblock %}
