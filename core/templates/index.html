@@ -101,6 +101,10 @@
             // Dynamic Weekly Activity Chart
             const weeklyActivityData = JSON.parse('{{ serialized_weekly_activity|safe }}');
             const ctx = document.getElementById('weeklyChart').getContext('2d');
+
+            const maxExercises = Math.max(...weeklyActivityData.data);
+            const yAxisMax = Math.ceil(maxExercises / 5) * 5;
+
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -119,7 +123,7 @@
                         y: { 
                             beginAtZero: true,
                             min: 0,
-                            max: 5,
+                            max: yAxisMax,
                             ticks: {
                                 stepSize: 1
                             }
