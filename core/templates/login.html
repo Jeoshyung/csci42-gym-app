@@ -4,14 +4,25 @@
 {% block title %}TrackFit - Login{% endblock %}
 
 {% block content %}
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+<style>
+    @media screen and (max-height: 740px) {
+        .logo-section img,
+        .logo-section h1,
+        .logo-section p {
+            display: none !important;
+        }
+    }
+</style>
+
+<div class="container d-flex align-items-center justify-content-center">
     <div class="col-md-4">
-        <div class="text-center mb-4">
+        <div class="text-center logo-section">
             <div class="d-flex align-items-center justify-content-center gap-3 mt-5 pt-4">
                 <img src="{% static 'images/logo.png' %}" alt="TrackFit Logo" class="img-fluid" style="height:20px;">
                 <h1 class="fw-bold fs-4 mb-0">TrackFit</h1>
             </div>
-        <p class="text-muted">Track your fitness journey</p>
+            <p class="text-muted">Track your fitness journey</p>
+        </div>
         
         <div class="card shadow-lg rounded-4 border-0">
             <div class="card-body p-4">
@@ -47,12 +58,9 @@
                 </form>
             </div>
         </div>
-                <p class="text-center mt-3 mb-0">
-                    Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a>
-                </p>
-           
+        <p class="text-center mt-3 mb-0">
+            Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a>
+        </p>
     </div>
 </div>
 {% endblock %}
-
-
