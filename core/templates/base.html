@@ -80,8 +80,10 @@
     <header class="mobile-header">
         <div class="container">
             <div class="header-content">
-                <img src="{% static 'images/logo_raw.png' %}" alt="TrackFit Logo">
-                <h1>TrackFit</h1>
+                <a href="{% url 'index' %}" class="text-decoration-none d-flex align-items-center gap-3">
+                    <img src="{% static 'images/logo_raw.png' %}" alt="TrackFit Logo">
+                    <h1>TrackFit</h1>
+                </a>
             </div>
         </div>
     </header>
