@@ -10,7 +10,24 @@
         <div class="col-md-6">
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
+                <div class="mb-3">
+                    <label for="weight" class="form-label">Weight</label>
+                    <div class="input-group">
+                        {{ form.weight }}
+                        {{ form.weight_unit }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="height" class="form-label">Height</label>
+                    <div class="input-group">
+                        {{ form.height }}
+                        {{ form.height_unit }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="birthdate" class="form-label">Birthdate</label>
+                    {{ form.birthdate }}
+                </div>
                 <button type="submit" class="btn btn-primary w-100">Save Profile</button>
             </form>
         </div>

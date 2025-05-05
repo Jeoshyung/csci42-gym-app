@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from .forms import LoginForm, RegisterForm, FitnessGoalForm, ProfileSetupForm
 from datetime import datetime
 
@@ -136,8 +137,27 @@ def index_view(request):
 
 @login_required
 def profile_view(request):
-    exercises = Exercise.objects.all()
-    return render(request, 'profile.html', {'exercises': exercises})
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if 'weight_unit' in data:
+            target_unit = data['weight_unit']
+            if target_unit in ['kg', 'lbs'] and target_unit != profile.weight_unit:
+                profile.weight = profile.convert_weight(target_unit)
+                profile.weight_unit = target_unit
+        if 'height_unit' in data:
+            target_unit = data['height_unit']
+            if target_unit in ['cm', 'ft'] and target_unit != profile.height_unit:
+                profile.height = profile.convert_height(target_unit)
+                profile.height_unit = target_unit
+        profile.save()
+        return JsonResponse({'success': True})
+
+    context = {
+        'profile': profile,
+    }
+    return render(request, 'profile.html', context)
 
 
 @login_required
