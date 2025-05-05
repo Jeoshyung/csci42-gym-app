@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from .forms import LoginForm, RegisterForm, FitnessGoalForm, ProfileSetupForm
-from datetime import datetime
+from datetime import datetime, date
 
 from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification, Muscle, Profile
 
@@ -140,7 +140,21 @@ def index_view(request):
 def profile_view(request):
     profile = request.user.profile
     exercises = Exercise.objects.all()
-    # return render(request, 'profile.html', {'exercises': exercises})
+
+    age = None
+    if profile.birthdate:
+        today = date.today()
+        age = today.year - profile.birthdate.year - \
+            ((today.month, today.day) <
+             (profile.birthdate.month, profile.birthdate.day))
+
+    bmi = None
+    if profile.weight and profile.height:
+        height_m = profile.height / \
+            100 if profile.height_unit == 'cm' else profile.height * 0.3048
+        weight_kg = profile.weight if profile.weight_unit == 'kg' else profile.weight * 0.453592
+        bmi = round(weight_kg / (height_m * height_m), 1)
+
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'weight_unit' in data:
@@ -158,7 +172,9 @@ def profile_view(request):
 
     context = {
         'profile': profile,
-        'exercises':exercises,
+        'exercises': exercises,
+        'age': age,
+        'bmi': bmi,
     }
     return render(request, 'profile.html', context)
 
@@ -204,23 +220,24 @@ def workouts_view(request):
     selected_levels = request.GET.getlist('level')
     selected_equipment = request.GET.getlist('equipment')
     selected_muscle_ids = request.GET.getlist('muscle')
-    
+
     # Initialize base queryset
     exercises = Exercise.objects.all()
-    
+
     # Apply filters
     if query:
         exercises = exercises.filter(name__icontains=query)
-    
+
     if selected_levels:
         exercises = exercises.filter(level__in=selected_levels)
-    
+
     if selected_equipment:
         exercises = exercises.filter(equipment__in=selected_equipment)
-    
+
     if selected_muscle_ids:
-        exercises = exercises.filter(primary_muscles__id__in=selected_muscle_ids)
-    
+        exercises = exercises.filter(
+            primary_muscles__id__in=selected_muscle_ids)
+
     # Apply sorting
     exercises = exercises.order_by(sort_by)
 
@@ -232,7 +249,7 @@ def workouts_view(request):
     paginator = Paginator(exercises, 9)
     page_number = request.GET.get('page')
     exercises = paginator.get_page(page_number)
-    
+
     # Prepare context
     context = {
         'exercises': exercises,
@@ -247,7 +264,7 @@ def workouts_view(request):
         'equipment_choices': Exercise.EQUIPMENT_CHOICES,
         'category_choices': Exercise.CATEGORY_CHOICES,
     }
-    
+
     return render(request, 'workouts.html', context)
 
 
@@ -294,11 +311,14 @@ def add_personal_record_view(request):
                     personal_record.unit = unit
                     personal_record.reps = reps
                     personal_record.save()
-                    messages.success(request, "Personal record updated successfully!")
+                    messages.success(
+                        request, "Personal record updated successfully!")
                 else:
-                    messages.info(request, "No update made. The new record is not better than the existing one.")
+                    messages.info(
+                        request, "No update made. The new record is not better than the existing one.")
             else:
-                messages.success(request, "Personal record added successfully!")
+                messages.success(
+                    request, "Personal record added successfully!")
 
             Notification.objects.create(
                 user=request.user,
@@ -398,32 +418,35 @@ def update_height(request):
 
 
 def password_reset_view(request):
-     if request.method == 'POST':
-         form = PasswordResetForm(request.POST)
-         if form.is_valid():
-             email = form.cleaned_data['email']
-             users = form.get_users(email)
-             if users:
-                 for user in users:
-                     current_site = get_current_site(request)
-                     subject = 'Password Reset Request'
-                     email_template_name = 'password_reset_email.html'
-                     context = {
-                         'email': email,
-                         'domain': current_site.domain,
-                         'site_name': current_site.name,
-                         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                         'user': user,
-                         'token': default_token_generator.make_token(user),
-                         'protocol': 'https' if request.is_secure() else 'http',
-                     }
-                     email_message = render_to_string(email_template_name, context)
-                     send_mail(subject, email_message, None, [email])
-                 messages.success(request, 'Password reset instructions have been sent to your email.')
-                 return redirect('login')
-             else:
-                 messages.error(request, 'No user is associated with this email address.')
-     else:
-         form = PasswordResetForm()
- 
-     return render(request, 'password_reset.html', {'form': form})
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            users = form.get_users(email)
+            if users:
+                for user in users:
+                    current_site = get_current_site(request)
+                    subject = 'Password Reset Request'
+                    email_template_name = 'password_reset_email.html'
+                    context = {
+                        'email': email,
+                        'domain': current_site.domain,
+                        'site_name': current_site.name,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'https' if request.is_secure() else 'http',
+                    }
+                    email_message = render_to_string(
+                        email_template_name, context)
+                    send_mail(subject, email_message, None, [email])
+                messages.success(
+                    request, 'Password reset instructions have been sent to your email.')
+                return redirect('login')
+            else:
+                messages.error(
+                    request, 'No user is associated with this email address.')
+    else:
+        form = PasswordResetForm()
+
+    return render(request, 'password_reset.html', {'form': form})
