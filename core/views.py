@@ -139,12 +139,20 @@ def index_view(request):
 def profile_view(request):
     profile = request.user.profile
     exercises = Exercise.objects.all()
+
     age = None
     if profile.birthdate:
         today = date.today()
         age = today.year - profile.birthdate.year - \
             ((today.month, today.day) <
              (profile.birthdate.month, profile.birthdate.day))
+
+    bmi = None
+    if profile.weight and profile.height:
+        height_m = profile.height / \
+            100 if profile.height_unit == 'cm' else profile.height * 0.3048
+        weight_kg = profile.weight if profile.weight_unit == 'kg' else profile.weight * 0.453592
+        bmi = round(weight_kg / (height_m * height_m), 1)
 
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -165,6 +173,7 @@ def profile_view(request):
         'profile': profile,
         'exercises': exercises,
         'age': age,
+        'bmi': bmi,
     }
     return render(request, 'profile.html', context)
 
