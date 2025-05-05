@@ -127,18 +127,18 @@
 <div class="container mt-4">
     
     <!-- Search Bar -->
-    <div class="row mb-4">
+    <div class="row mb-2">
         <div class="col-12">
-            <form method="GET" class="d-flex search-form">
-                <input type="text" name="q" class="form-control me-2" placeholder="Search workouts..." value="{{ query }}" style="border-color: #6610f2;">
-                <button type="submit" class="btn" style="background-color: #6610f2; border-color: #6610f2; color: white;">Search</button>
+            <form method="GET" class="search-form d-flex gap-2 align-items-end">
+                <input type="text" name="q" class="form-control" placeholder="Search workouts..." value="{{ query }}" style="border-color: #6610f2; flex: 4; padding-top: 11px;">
+                <button type="submit" class="btn" style="background-color: #6610f2; border-color: #6610f2; color: white; flex: 1;">Search</button>
             </form>
         </div>
     </div>
 
     <!-- Sort and Filter Sections -->
-    <div class="row mb-4">
-        <div class="col-12 col-md-6 mb-3">
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 mb-1">
             <div class="sort-dropdown">
                 <button class="btn dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     Sort by
@@ -159,7 +159,7 @@
                 </ul>
             </div>
         </div>
-        <div class="col-12 col-md-6 mb-3">
+        <div class="col-12 col-md-6 mb-1">
             <div class="filter-dropdown">
                 <button class="btn dropdown-toggle" type="button" id="difficultyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     Difficulty
@@ -189,7 +189,7 @@
                 </ul>
             </div>
         </div>
-        <div class="col-12 col-md-6 mb-3">
+        <div class="col-12 col-md-6 mb-1">
             <div class="filter-dropdown">
                 <button class="btn dropdown-toggle" type="button" id="equipmentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     Equipment
@@ -273,7 +273,7 @@
                 </ul>
             </div>
         </div>
-        <div class="col-12 col-md-6 mb-3">
+        <div class="col-12 col-md-6 mb-1">
             <div class="filter-dropdown">
                 <button class="btn dropdown-toggle" type="button" id="muscleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     Muscle Groups
@@ -302,26 +302,26 @@
 
     <!-- Selected Filters Display -->
     {% if selected_levels or selected_equipment or selected_muscles %}
-    <div class="selected-filters mb-4">
+    <div class="selected-filters mb-2 d-flex flex-wrap">
         {% for level in selected_levels %}
-        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('level', '{{ level }}')">
-            {{ level|title }}
-            <span class="ms-1">×</span>
-        </button>
+        <div class="badge text-white me-2 mb-2 d-flex align-items-center" style="background-color: #4a00e0;">
+            <span>{{ level|title }}</span>
+            <button type="button" class="btn-close ms-2" aria-label="Remove" onclick="removeFilter('level', '{{ level }}')" style="color: white; filter: invert(1);"></button>
+        </div>
         {% endfor %}
         
         {% for equipment in selected_equipment %}
-        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('equipment', '{{ equipment }}')">
-            {{ equipment|title }}
-            <span class="ms-1">×</span>
-        </button>
+        <div class="badge text-white me-2 mb-2 d-flex align-items-center" style="background-color: #4a00e0;">
+            <span>{{ equipment|title }}</span>
+            <button type="button" class="btn-close ms-2" aria-label="Remove" onclick="removeFilter('equipment', '{{ equipment }}')" style="color: white; filter: invert(1);"></button>
+        </div>
         {% endfor %}
         
         {% for muscle in selected_muscles %}
-        <button class="btn btn-danger btn-sm me-2 mb-2" style="background-color: #8B0000; border-color: #8B0000;" onclick="removeFilter('muscle', '{{ muscle.id }}')">
-            {{ muscle.name|title }}
-            <span class="ms-1">×</span>
-        </button>
+        <div class="badge text-white me-2 mb-2 d-flex align-items-center" style="background-color: #4a00e0;">
+            <span>{{ muscle.name|title }}</span>
+            <button type="button" class="btn-close ms-2" aria-label="Remove" onclick="removeFilter('muscle', '{{ muscle.id }}')" style="color: white; filter: invert(1);"></button>
+        </div>
         {% endfor %}
     </div>
     {% endif %}
