@@ -13,7 +13,11 @@ class Profile(models.Model):
     name = models.CharField(max_length=63)
     email = models.EmailField(max_length=254)
     weight = models.FloatField(null=True, blank=True)
+    weight_unit = models.CharField(
+        max_length=10, choices=[('kg', 'Kilograms'), ('lbs', 'Pounds')], default='kg')
     height = models.FloatField(null=True, blank=True)
+    height_unit = models.CharField(
+        max_length=10, choices=[('cm', 'Centimeters'), ('ft', 'Feet')], default='cm')
     birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
@@ -30,6 +34,26 @@ class Profile(models.Model):
             self.user.email = self.email
             self.user.save()
         super(Profile, self).save(*args, **kwargs)
+
+    def convert_weight(self, target_unit):
+        """Convert weight to the target unit."""
+        if self.weight is None:
+            return None
+        if self.weight_unit == 'kg' and target_unit == 'lbs':
+            return round(self.weight * 2.20462, 2)  
+        elif self.weight_unit == 'lbs' and target_unit == 'kg':
+            return round(self.weight / 2.20462, 2)  
+        return self.weight  
+
+    def convert_height(self, target_unit):
+        """Convert height to the target unit."""
+        if self.height is None:
+            return None
+        if self.height_unit == 'cm' and target_unit == 'ft':
+            return round(self.height / 30.48, 2)  
+        elif self.height_unit == 'ft' and target_unit == 'cm':
+            return round(self.height * 30.48, 2)  
+        return self.height  
 
 # class ExerciseCategory(models.Model):
 #     name = models.CharField(max_length=255)

@@ -175,20 +175,38 @@
 </head>
 <body>
     <div class="container mt-4">
+        <div class="d-flex align-items-center mb-4">
+            <h3 class="fw-bold mb-0">Profile</h3>
+        </div>
+
         <div class="card shadow-sm p-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <i class="fas fa-edit text-primary fs-5"></i>
-            </div>
             <div class="text-center mt-3">
-                <img src="{% static 'images/placeholder_profile.jpg' %}" class="profile-img" alt="Profile Picture">
                 <h4 class="mt-2">{{ user.username }}</h4>
+                <p class="text-muted mb-2">
+                    {% if age %}
+                        {{ age }} years old
+                    {% else %}
+                        Age not set
+                    {% endif %}
+                </p>
+                <p class="text-muted mb-2">
+                    {% if bmi %}
+                        BMI: {{ bmi }}
+                    {% else %}
+                        BMI: Not available
+                    {% endif %}
+                </p>
             </div>
             <div class="row text-center mt-4">
                 <div class="col">
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Weight</p>
                         <h5>
-                            {{ user.profile.weight|default:"N/A" }} kg
+                            <span id="weight-value">{{ profile.weight|default:"N/A" }}</span>
+                            <select id="weight-unit" class="form-select d-inline w-auto" onchange="updateUnit('weight')">
+                                <option value="kg" {% if profile.weight_unit == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="lbs" {% if profile.weight_unit == 'lbs' %}selected{% endif %}>lbs</option>
+                            </select>
                             <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editWeightModal">
                                 <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
                                      style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
@@ -200,7 +218,11 @@
                     <div class="card p-2 profile-stat-card">
                         <p class="mb-1 text-muted">Height</p>
                         <h5>
-                            {{ user.profile.height|default:"N/A" }} cm
+                            <span id="height-value">{{ profile.height|default:"N/A" }}</span>
+                            <select id="height-unit" class="form-select d-inline w-auto" onchange="updateUnit('height')">
+                                <option value="cm" {% if profile.height_unit == 'cm' %}selected{% endif %}>cm</option>
+                                <option value="ft" {% if profile.height_unit == 'ft' %}selected{% endif %}>ft</option>
+                            </select>
                             <button class="btn btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#editHeightModal">
                                 <img src="{% static 'images/button_icons/edit.png' %}" alt="Edit"
                                      style="width: 16px; height: 16px; vertical-align: middle; filter: grayscale(100%); opacity: 0.3; transform: translateY(-4px);">
@@ -208,119 +230,121 @@
                         </h5>
                     </div>
                 </div>
-            </div>
-            <div class="mt-4">
-                <h5 class="fw-bold text-start">Personal Records</h5>
-                <div class="card p-4 shadow-sm rounded bg-light position-relative">
-                    <div class="pr-container d-flex flex-nowrap overflow-auto">
-                        {% for record in user.personal_records.all %}
-                        <div class="pr-item d-flex flex-column align-items-center p-3 shadow-sm rounded border record-item"
-                            data-bs-toggle="modal"
-                            data-bs-target="#prModal{{ record.id }}">
-                            <div class="exercise-name-box w-100 text-center">
-                                <h6 class="fw-bold text-truncate">{{ record.exercise.name }}</h6>
-                            </div>
-                            <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon">
-                            <div class="reps-sets text-center">
-                                <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
-                            </div>
-                            <div class="text-center mt-auto text-muted">
-                                <small>{{ record.date_achieved|date:"M d, Y" }}</small>
-                            </div>
-                        </div>
-                        <div class="modal fade" id="prModal{{ record.id }}" tabindex="-1" aria-labelledby="prModalLabel{{ record.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="prModalLabel{{ record.id }}">{{ record.exercise.name }}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Weight:</strong> {{ record.weight }} {{ record.unit }}</p>
-                                        <p><strong>Reps:</strong> {{ record.reps }}</p>
-                                        <p><strong>Date Achieved:</strong> {{ record.date_achieved|date:"M d, Y" }}</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <form method="POST" action="{% url 'delete_personal_record' record.id %}" style="display: inline;">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% empty %}
-                            <p class="text-center text-muted">No personal records yet.</p>
-                        {% endfor %}
+
+    <div class="mt-4">
+        <h5 class="fw-bold text-start">Personal Records</h5>
+        <div class="card p-4 shadow-sm rounded bg-light position-relative">
+            <div class="pr-container d-flex flex-nowrap overflow-auto">
+                {% for record in user.personal_records.all %}
+                <div class="pr-item d-flex flex-column align-items-center p-3 shadow-sm rounded border record-item"
+                    data-bs-toggle="modal"
+                    data-bs-target="#prModal{{ record.id }}">
+                    <div class="exercise-name-box w-100 text-center">
+                        <h6 class="fw-bold text-truncate">{{ record.exercise.name }}</h6>
                     </div>
-                    <button class="btn btn-primary rounded-circle position-absolute"
-                            style="width: 50px; height: 50px; bottom: 20px; right: 20px;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#addPRModal">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
+                    <img src="{% static 'images/button_icons/trophy.png' %}" class="pr-icon" alt="Trophy Icon">
+                    <div class="reps-sets text-center">
+                        <small class="text-muted">{{ record.weight }} {{ record.unit }} x {{ record.reps }} reps</small>
+                    </div>
+                    <div class="text-center mt-auto text-muted">
+                        <small>{{ record.date_achieved|date:"M d, Y" }}</small>
+                    </div>
                 </div>
-                <div class="modal fade" id="addPRModal" tabindex="-1" aria-labelledby="addPRModalLabel" aria-hidden="true">
+                <div class="modal fade" id="prModal{{ record.id }}" tabindex="-1" aria-labelledby="prModalLabel{{ record.id }}" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="addPRModalLabel">Add Personal Record</h5>
+                                <h5 class="modal-title" id="prModalLabel{{ record.id }}">{{ record.exercise.name }}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="addPRForm" method="POST" action="{% url 'add_personal_record' %}">
+                                <p><strong>Weight:</strong> {{ record.weight }} {{ record.unit }}</p>
+                                <p><strong>Reps:</strong> {{ record.reps }}</p>
+                                <p><strong>Date Achieved:</strong> {{ record.date_achieved|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <form method="POST" action="{% url 'delete_personal_record' record.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <div class="mb-3">
-                                        <label for="exercise" class="form-label">Exercise</label>
-                                        <select name="exercise" id="exercise" class="form-select" required>
-                                            <option value="" disabled selected>Select an exercise</option>
-                                            {% for exercise in exercises %}
-                                                <option value="{{ exercise.id }}">{{ exercise.name }}</option>
-                                            {% empty %}
-                                                <option disabled>No exercises available</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="weight" class="form-label">Weight</label>
-                                        <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="unit" class="form-label">Unit</label>
-                                        <input type="text" name="unit" id="unit" class="form-control" required>
-                                        <small class="text-muted">e.g. kg, lbs, plates, bodyweight, etc.</small>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="reps" class="form-label">Reps</label>
-                                        <input type="number" name="reps" id="reps" class="form-control" required>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary">Save Record</button>
+                                    <button type="submit" class="btn btn-danger">Delete</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                    <p class="text-center text-muted">No personal records yet.</p>
+                {% endfor %}
+            </div>
+            <button class="btn btn-primary rounded-circle position-absolute"
+                    style="width: 50px; height: 50px; bottom: 20px; right: 20px;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addPRModal">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
+        <div class="modal fade" id="addPRModal" tabindex="-1" aria-labelledby="addPRModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addPRModalLabel">Add Personal Record</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addPRForm" method="POST" action="{% url 'add_personal_record' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="exercise" class="form-label">Exercise</label>
+                                <select name="exercise" id="exercise" class="form-select" required>
+                                    <option value="" disabled selected>Select an exercise</option>
+                                    {% for exercise in exercises %}
+                                        <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                                    {% empty %}
+                                        <option disabled>No exercises available</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="weight" class="form-label">Weight</label>
+                                <input type="number" name="weight" id="weight" class="form-control" step="0.01" required>
+                            </div>
+
+                                    <div class="mb-3">
+                                        <label for="unit" class="form-label">Unit</label>
+                                        <select name="unit" id="unit" class="form-select" required>
+                                            <option value="" disabled selected>Select a unit</option>
+                                            <option value="kg">kg</option>
+                                            <option value="lbs">lbs</option>
+                                            <option value="plates">plates</option>
+                                            <option value="bodyweight">bodyweight</option>
+                                        </select>
+                                    </div>
+
+                            <div class="mb-3">
+                                <label for="reps" class="form-label">Reps</label>
+                                <input type="number" name="reps" id="reps" class="form-control" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Record</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="mt-4">
-            <li class="list-group-item logout-item rounded">
-                <form method="post" action="{% url 'logout' %}" style="width: 100%;">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-button">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <div>Logout</div>
-                    </button>
-                </form>
-            </li>
-        </ul>
     </div>
+    <div class="mt-4">
+        <li class="list-group-item logout-item rounded">
+            <form method="post" action="{% url 'logout' %}" style="width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <div>Logout</div>
+                </button>
+            </form>
+        </li>
     </div>
+</div>
 
 <div class="modal fade" id="editWeightModal" tabindex="-1" aria-labelledby="editWeightModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -333,7 +357,7 @@
                 <form method="POST" action="{% url 'update_weight' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="weight" class="form-label">Weight (kg)</label>
+                        <label for="weight" id="weight-label" class="form-label">Weight ({{ profile.weight_unit }})</label>
                         <input type="number" name="weight" id="weight" class="form-control" step="0.01" value="{{ user.profile.weight|default:'' }}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -342,7 +366,6 @@
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="editHeightModal" tabindex="-1" aria-labelledby="editHeightModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -355,7 +378,7 @@
                 <form method="POST" action="{% url 'update_height' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="height" class="form-label">Height (cm)</label>
+                        <label for="height" id="height-label" class="form-label">Height ({{ profile.height_unit }})</label>
                         <input type="number" name="height" id="height" class="form-control" step="0.01" value="{{ user.profile.height|default:'' }}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -364,5 +387,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updateUnit(type) {
+        const unit = document.getElementById(`${type}-unit`).value;
+        fetch("{% url 'profile' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ [`${type}_unit`]: unit }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); 
+            } else {
+                alert('Failed to update unit.');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const heightLabel = document.getElementById('height-label');
+        const currentUnit = "{{ profile.height_unit }}"; 
+        heightLabel.textContent = `Height (${currentUnit})`; 
+
+        const weightLabel = document.getElementById('weight-label');
+        const currentWeightUnit = "{{ profile.weight_unit }}";
+        weightLabel.textContent = `Weight (${currentWeightUnit})`;
+    });
+</script>
 </body>
 {% endblock %}

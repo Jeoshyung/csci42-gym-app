@@ -103,7 +103,8 @@ http://<your-ip>:8000/
 Example:
 ```cpp
 http://192.168.1.2:8000/
-=======
+```
+
 ## Reset Database Instructions
 **WARNING: Only follow this if you wish to reset the database.**
 

@@ -43,9 +43,11 @@ class FitnessGoalForm(forms.ModelForm):
 class ProfileSetupForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['weight', 'height', 'birthdate']
+        fields = ['weight', 'weight_unit', 'height', 'height_unit', 'birthdate']
         widgets = {
-            'weight': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Weight in kg'}),
-            'height': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Height in cm'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Weight'}),
+            'weight_unit': forms.Select(attrs={'class': 'form-select'}),
+            'height': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Height'}),
+            'height_unit': forms.Select(attrs={'class': 'form-select'}),
             'birthdate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }

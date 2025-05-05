@@ -3,8 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from .forms import LoginForm, RegisterForm, FitnessGoalForm, ProfileSetupForm
-from datetime import datetime
+from datetime import datetime, date
 
 from .models import WorkoutSession, WorkoutLogging, Exercise, FitnessGoal, PersonalRecord, Notification, Muscle, Profile
 
@@ -30,6 +31,75 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 
 
+def has_worked_out_today(user):
+    """Check if user has worked out today"""
+    today = timezone.now().date()
+    return WorkoutSession.objects.filter(
+        user=user,
+        date__date=today
+    ).exists()
+
+
+def check_workout_streak(user):
+    """Check user's workout streak and return the number of consecutive days"""
+    today = timezone.now().date()
+    streak = 0
+    current_date = today
+    
+    while True:
+        if not WorkoutSession.objects.filter(user=user, date__date=current_date).exists():
+            break
+        streak += 1
+        current_date -= timedelta(days=1)
+    
+    return streak
+
+
+def create_milestone_notification(user, streak):
+    """Create milestone notifications based on streak length"""
+    if streak == 7:
+        Notification.objects.create(
+            user=user,
+            title="One Week Milestone! 🎉",
+            message="Amazing! You've worked out for 7 days in a row. Keep up the fantastic work - you're building great habits!",
+            notification_type='progress'
+        )
+    elif streak == 30:
+        Notification.objects.create(
+            user=user,
+            title="One Month Milestone! 🏆",
+            message="Incredible achievement! You've maintained your workout routine for a full month. You're an inspiration!",
+            notification_type='progress'
+        )
+    elif streak == 100:
+        Notification.objects.create(
+            user=user,
+            title="100 Days Strong! 💪",
+            message="What an extraordinary accomplishment! 100 days of consistent workouts. You're unstoppable!",
+            notification_type='progress'
+        )
+
+
+def create_welcome_back_notification(user):
+    """Create a welcome back notification for the user's first workout of the day"""
+    Notification.objects.create(
+        user=user,
+        title="Welcome Back! 💪",
+        message="Great to see you back for another workout! Consistency is the key to success.",
+        notification_type='workout_reminder'
+    )
+
+
+def create_welcome_notification(user):
+    """Create a welcome notification for first-time users"""
+    Notification.objects.create(
+        user=user,
+        title="Welcome to TrackFit! 🎉",
+        message="Welcome to your fitness journey! We're excited to help you achieve your fitness goals. Start by logging your first workout!",
+        notification_type='progress'
+    )
+
+
 def exercise_detail_view(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id)
     return render(request, 'exercise_detail.html', {'exercise': exercise})
@@ -51,6 +121,11 @@ def login_view(request):
                 else:
                     request.session.set_expiry(0)
                     request.session.modified = True
+                
+                # Check if this is the user's first login
+                if not user.workout_sessions.exists():
+                    create_welcome_notification(user)
+                
                 profile = user.profile
                 if not profile.weight or not profile.height or not profile.birthdate:
                     messages.info(
@@ -100,7 +175,8 @@ def index_view(request):
     for session in weekly_sessions:
         session_date = session.date.astimezone(shanghai_tz)
         weekday = session_date.weekday()
-        activity_per_day[weekday] += 1
+        exercises_logged = WorkoutLogging.objects.filter(session=session).count()
+        activity_per_day[weekday] += exercises_logged
 
     week_labels = []
     for i in range(7):
@@ -136,8 +212,45 @@ def index_view(request):
 
 @login_required
 def profile_view(request):
+    profile = request.user.profile
     exercises = Exercise.objects.all()
-    return render(request, 'profile.html', {'exercises': exercises})
+
+    age = None
+    if profile.birthdate:
+        today = date.today()
+        age = today.year - profile.birthdate.year - \
+            ((today.month, today.day) <
+             (profile.birthdate.month, profile.birthdate.day))
+
+    bmi = None
+    if profile.weight and profile.height:
+        height_m = profile.height / \
+            100 if profile.height_unit == 'cm' else profile.height * 0.3048
+        weight_kg = profile.weight if profile.weight_unit == 'kg' else profile.weight * 0.453592
+        bmi = round(weight_kg / (height_m * height_m), 1)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if 'weight_unit' in data:
+            target_unit = data['weight_unit']
+            if target_unit in ['kg', 'lbs'] and target_unit != profile.weight_unit:
+                profile.weight = profile.convert_weight(target_unit)
+                profile.weight_unit = target_unit
+        if 'height_unit' in data:
+            target_unit = data['height_unit']
+            if target_unit in ['cm', 'ft'] and target_unit != profile.height_unit:
+                profile.height = profile.convert_height(target_unit)
+                profile.height_unit = target_unit
+        profile.save()
+        return JsonResponse({'success': True})
+
+    context = {
+        'profile': profile,
+        'exercises': exercises,
+        'age': age,
+        'bmi': bmi,
+    }
+    return render(request, 'profile.html', context)
 
 
 @login_required
@@ -153,6 +266,10 @@ def workout_logger_view(request):
 
         if selected_exercise_id and sets and reps:
             exercise = Exercise.objects.get(id=selected_exercise_id)
+            
+            # Check if this is the first workout of the day
+            if not has_worked_out_today(request.user):
+                create_welcome_back_notification(request.user)
 
             session, created = WorkoutSession.objects.get_or_create(
                 user=request.user,
@@ -163,6 +280,11 @@ def workout_logger_view(request):
             WorkoutLogging.objects.create(
                 session=session, exercise=exercise, sets=sets, reps=reps
             )
+            
+            # Check workout streak and create milestone notifications
+            streak = check_workout_streak(request.user)
+            create_milestone_notification(request.user, streak)
+            
             messages.success(request, "Workout logged successfully!")
             return redirect('workout_logger')
 
@@ -181,23 +303,24 @@ def workouts_view(request):
     selected_levels = request.GET.getlist('level')
     selected_equipment = request.GET.getlist('equipment')
     selected_muscle_ids = request.GET.getlist('muscle')
-    
+
     # Initialize base queryset
     exercises = Exercise.objects.all()
-    
+
     # Apply filters
     if query:
         exercises = exercises.filter(name__icontains=query)
-    
+
     if selected_levels:
         exercises = exercises.filter(level__in=selected_levels)
-    
+
     if selected_equipment:
         exercises = exercises.filter(equipment__in=selected_equipment)
-    
+
     if selected_muscle_ids:
-        exercises = exercises.filter(primary_muscles__id__in=selected_muscle_ids)
-    
+        exercises = exercises.filter(
+            primary_muscles__id__in=selected_muscle_ids)
+
     # Apply sorting
     exercises = exercises.order_by(sort_by)
 
@@ -209,7 +332,7 @@ def workouts_view(request):
     paginator = Paginator(exercises, 9)
     page_number = request.GET.get('page')
     exercises = paginator.get_page(page_number)
-    
+
     # Prepare context
     context = {
         'exercises': exercises,
@@ -224,7 +347,7 @@ def workouts_view(request):
         'equipment_choices': Exercise.EQUIPMENT_CHOICES,
         'category_choices': Exercise.CATEGORY_CHOICES,
     }
-    
+
     return render(request, 'workouts.html', context)
 
 
@@ -255,23 +378,39 @@ def add_personal_record_view(request):
         if exercise_id and weight and unit:
             exercise = get_object_or_404(Exercise, id=exercise_id)
 
-            personal_record = PersonalRecord.objects.create(
+            personal_record, created = PersonalRecord.objects.get_or_create(
                 user=request.user,
                 exercise=exercise,
-                weight=weight,
-                unit=unit,
-                reps=reps
+                defaults={
+                    'weight': weight,
+                    'unit': unit,
+                    'reps': reps
+                }
             )
+
+            if not created:
+                if float(weight) > personal_record.weight or int(reps) > personal_record.reps:
+                    personal_record.weight = weight
+                    personal_record.unit = unit
+                    personal_record.reps = reps
+                    personal_record.save()
+                    messages.success(
+                        request, "Personal record updated successfully!")
+                else:
+                    messages.info(
+                        request, "No update made. The new record is not better than the existing one.")
+            else:
+                messages.success(
+                    request, "Personal record added successfully!")
 
             Notification.objects.create(
                 user=request.user,
-                title="New Personal Record!",
+                title="New Personal Record!" if created else "Personal Record Updated!",
                 message=f"Congratulations! You've set a new personal record for {exercise.name}: {weight}{unit} x {reps} reps",
                 notification_type='personal_record',
                 related_record=personal_record
             )
 
-            messages.success(request, "Personal record added successfully!")
             return redirect('profile')
 
     exercises = Exercise.objects.all()
@@ -297,6 +436,12 @@ def notifications_view(request):
     unread_count = notifications.filter(is_read=False).count()
 
     if request.method == 'POST':
+        if 'clear_all' in request.POST:
+            # Clear all notifications for the user
+            notifications.delete()
+            messages.success(request, "All notifications have been cleared.")
+            return redirect('notifications')
+
         notification_id = request.POST.get('notification_id')
         if notification_id:
             notification = get_object_or_404(
@@ -356,32 +501,35 @@ def update_height(request):
 
 
 def password_reset_view(request):
-     if request.method == 'POST':
-         form = PasswordResetForm(request.POST)
-         if form.is_valid():
-             email = form.cleaned_data['email']
-             users = form.get_users(email)
-             if users:
-                 for user in users:
-                     current_site = get_current_site(request)
-                     subject = 'Password Reset Request'
-                     email_template_name = 'password_reset_email.html'
-                     context = {
-                         'email': email,
-                         'domain': current_site.domain,
-                         'site_name': current_site.name,
-                         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                         'user': user,
-                         'token': default_token_generator.make_token(user),
-                         'protocol': 'https' if request.is_secure() else 'http',
-                     }
-                     email_message = render_to_string(email_template_name, context)
-                     send_mail(subject, email_message, None, [email])
-                 messages.success(request, 'Password reset instructions have been sent to your email.')
-                 return redirect('login')
-             else:
-                 messages.error(request, 'No user is associated with this email address.')
-     else:
-         form = PasswordResetForm()
- 
-     return render(request, 'password_reset.html', {'form': form})
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            users = form.get_users(email)
+            if users:
+                for user in users:
+                    current_site = get_current_site(request)
+                    subject = 'Password Reset Request'
+                    email_template_name = 'password_reset_email.html'
+                    context = {
+                        'email': email,
+                        'domain': current_site.domain,
+                        'site_name': current_site.name,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'https' if request.is_secure() else 'http',
+                    }
+                    email_message = render_to_string(
+                        email_template_name, context)
+                    send_mail(subject, email_message, None, [email])
+                messages.success(
+                    request, 'Password reset instructions have been sent to your email.')
+                return redirect('login')
+            else:
+                messages.error(
+                    request, 'No user is associated with this email address.')
+    else:
+        form = PasswordResetForm()
+
+    return render(request, 'password_reset.html', {'form': form})
