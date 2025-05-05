@@ -332,6 +332,12 @@ def notifications_view(request):
     unread_count = notifications.filter(is_read=False).count()
 
     if request.method == 'POST':
+        if 'clear_all' in request.POST:
+            # Clear all notifications for the user
+            notifications.delete()
+            messages.success(request, "All notifications have been cleared.")
+            return redirect('notifications')
+
         notification_id = request.POST.get('notification_id')
         if notification_id:
             notification = get_object_or_404(
