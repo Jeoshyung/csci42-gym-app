@@ -138,7 +138,8 @@ def index_view(request):
 @login_required
 def profile_view(request):
     profile = request.user.profile
-
+    exercises = Exercise.objects.all()
+    # return render(request, 'profile.html', {'exercises': exercises})
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'weight_unit' in data:
@@ -156,6 +157,7 @@ def profile_view(request):
 
     context = {
         'profile': profile,
+        'exercises':exercises,
     }
     return render(request, 'profile.html', context)
 
