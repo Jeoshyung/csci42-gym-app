@@ -101,7 +101,8 @@ def index_view(request):
     for session in weekly_sessions:
         session_date = session.date.astimezone(shanghai_tz)
         weekday = session_date.weekday()
-        activity_per_day[weekday] += 1
+        exercises_logged = WorkoutLogging.objects.filter(session=session).count()
+        activity_per_day[weekday] += exercises_logged
 
     week_labels = []
     for i in range(7):
